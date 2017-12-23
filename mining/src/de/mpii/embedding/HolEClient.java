@@ -68,8 +68,37 @@ public class HolEClient implements EmbeddingClient {
 
     @Override
     public double getScore(int subject, int predicate, int object) {
-        // TODO
-        throw new RuntimeException("Not implemented");
+        double y[] = new double[eLength];
+        double a[] = new double[eLength];
+        double x2[] = new double[eLength];
+
+        y[0] = 0;
+        a[0] = entitiesEmbedding[object].value[0];
+
+        for (int i = 1; i < eLength; ++i) {
+            a[i] = entitiesEmbedding[object].value[eLength - i];
+        }
+
+        for (int i = 0; i < eLength; ++i) {
+            y[0] += entitiesEmbedding[subject].value[i] * a[i];
+        }
+        for (int k = 1; k < eLength; ++k) {
+            y[k] = 0;
+            for (int i = 1; i < eLength; ++i) {
+                x2[i] = a[i - 1];
+            }
+            x2[0] = a[eLength - 1];
+            for (int i = 0; i < eLength; ++i) {
+                a[i] += x2[i];
+                y[k] += entitiesEmbedding[subject].value[i] * x2[i];
+            }
+        }
+
+        double result = 0;
+        for (int i = 0; i < eLength; ++i) {
+            result += y[i] * relationsEmbedding[predicate].value[i];
+        }
+        return 1.0 / (1 + Math.exp(-result));
     }
 
     @Override
