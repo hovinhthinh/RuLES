@@ -1,0 +1,5 @@
+TransE:
+--margin 1 --lr 0.1 --ncomp 50
+INFO:EX-KG:[300] TEST: MRR = 0.21/0.30, Mean Rank = 242.50/96.51, Hits@10 = 43.33/54.68
+DEBUG:EX-KG:FMRR valid = 0.299497, best = 0.297724
+
