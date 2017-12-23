@@ -1,0 +1,19 @@
+<project>
+    <target name="build">
+        <delete file="./build.jar"/>
+        <mkdir dir="./antbuild/"/>
+        <javac srcdir="./src/" destdir="./antbuild/">
+            <include name="**/*.java"/>
+            <classpath>
+                <pathelement path="./lib/commons-cli-1.3.1.jar"/>
+            </classpath>
+        </javac>
+        <jar destfile="./build.jar" basedir="./antbuild/">
+            <manifest>
+                <attribute name="Main-Class" value="de.mpii.Main"/>
+            </manifest>
+            <zipgroupfileset dir="./lib/" includes="**/*.jar"/>
+        </jar>
+        <delete dir="./antbuild/"/>
+    </target>
+</project>

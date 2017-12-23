@@ -1,0 +1,220 @@
+package de.mpii.mining.graph;
+
+import de.mpii.mining.rule.SOInstance;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.util.*;
+import java.util.logging.Logger;
+
+/**
+ * Created by hovinhthinh on 11/13/17.
+ */
+
+public class KnowledgeGraph {
+    public static final Logger LOGGER = Logger.getLogger(KnowledgeGraph.class.getName());
+    public int nEntities, nRelations, nTypes;
+    public String[] entitiesString, relationsString, typesString;
+    public HashMap<String, Integer> entitiesStringMap, relationsStringMap, typesStringMap;
+    public List<OutgoingEdge>[] outEdges;
+    public List<Integer>[] types;
+    public List<SOInstance>[] pidSOInstances;
+    public List<Integer>[] typeInstances;
+    public FactEncodedSet trueFacts, idealFacts;
+    public TypeEncodedSet trueTypes;
+    public HashMap<Long, List<Integer>> soPidMap;
+    public HashMap<Integer, Integer> maxVarPids;
+    public HashSet<Integer>[] danglingPids;
+
+    public KnowledgeGraph(String workspace) {
+        LOGGER.info("Loading knowledge graph from '" + workspace + "'.");
+        String[] spl;
+        String line = null;
+        try {
+            BufferedReader metaIn = new BufferedReader(new InputStreamReader(new FileInputStream(new File(workspace +
+                    "/meta.txt"))));
+            spl = metaIn.readLine().split("\\s++");
+            nEntities = Integer.parseInt(spl[0]);
+            nRelations = Integer.parseInt(spl[1]);
+            nTypes = Integer.parseInt(spl[2]);
+
+            outEdges = new List[nEntities];
+            types = new List[nEntities];
+
+            pidSOInstances = new List[nRelations];
+            typeInstances = new List[nTypes];
+
+            trueTypes = new TypeEncodedSet();
+
+            for (int i = 0; i < nEntities; ++i) {
+                outEdges[i] = new ArrayList<>();
+                types[i] = new ArrayList<>();
+            }
+            for (int i = 0; i < nRelations; ++i) {
+                pidSOInstances[i] = new ArrayList<>();
+            }
+            for (int i = 0; i < nTypes; ++i) {
+                typeInstances[i] = new ArrayList<>();
+            }
+
+            entitiesString = new String[nEntities];
+            entitiesStringMap = new HashMap<>();
+            for (int i = 0; i < nEntities; ++i) {
+                entitiesString[i] = metaIn.readLine();
+                entitiesStringMap.put(entitiesString[i], i);
+            }
+            relationsString = new String[nRelations];
+            relationsStringMap = new HashMap<>();
+            for (int i = 0; i < nRelations; ++i) {
+                relationsString[i] = metaIn.readLine();
+                relationsStringMap.put(relationsString[i], i);
+            }
+            typesString = new String[nTypes];
+            typesStringMap = new HashMap<>();
+            for (int i = 0; i < nTypes; ++i) {
+                typesString[i] = metaIn.readLine();
+                typesStringMap.put(typesString[i], i);
+            }
+            while ((line = metaIn.readLine()) != null) {
+                if (line.isEmpty()) {
+                    break;
+                }
+                spl = line.split("\\s++");
+                int s = Integer.parseInt(spl[0]), p = Integer.parseInt(spl[1]);
+                types[s].add(p);
+                trueTypes.addType(s, p);
+                typeInstances[p].add(s);
+            }
+            metaIn.close();
+            trueFacts = new FactEncodedSet();
+            soPidMap = new HashMap<>();
+            danglingPids = new HashSet[nEntities];
+            for (int i = 0; i < nEntities; ++i) {
+                danglingPids[i] = new HashSet<>();
+            }
+            Scanner in = new Scanner(new File(workspace + "/train.txt"));
+
+            maxVarPids = new HashMap<>();
+            HashMap<Integer, HashMap<Integer, Integer>> maxVarPidsTemp = new HashMap<>();
+
+            for (int i = 0; i < nRelations; ++i) {
+                maxVarPidsTemp.put(i, new HashMap<>());
+                maxVarPidsTemp.put(-i - 1, new HashMap<>());
+            }
+
+            while (in.hasNext()) {
+                int s = in.nextInt(), p = in.nextInt(), o = in.nextInt();
+                outEdges[s].add(new OutgoingEdge(p, o));
+                outEdges[o].add(new OutgoingEdge(-p - 1, s));
+                trueFacts.addFact(s, p, o);
+                pidSOInstances[p].add(new SOInstance(s, o));
+
+                long soCode = encodeSO(s, o);
+                if (!soPidMap.containsKey(soCode)) {
+                    soPidMap.put(soCode, new LinkedList<>());
+                }
+                List<Integer> pidList = soPidMap.get(soCode);
+                pidList.add(p);
+                danglingPids[s].add(p);
+                danglingPids[o].add(-p - 1);
+
+                HashMap<Integer, Integer> pidCount = maxVarPidsTemp.get(p);
+                pidCount.put(s, pidCount.getOrDefault(s, 0) + 1);
+                pidCount = maxVarPidsTemp.get(-p - 1);
+                pidCount.put(o, pidCount.getOrDefault(o, 0) + 1);
+            }
+            for (int i = 0; i < nRelations; ++i) {
+                HashMap<Integer, Integer> pidCount = maxVarPidsTemp.get(i);
+                int max = 0;
+                for (Map.Entry<Integer, Integer> e : pidCount.entrySet()) {
+                    max = Math.max(max, e.getValue());
+                }
+                maxVarPids.put(i, max);
+                pidCount = maxVarPidsTemp.get(-i - 1);
+                max = 0;
+                for (Map.Entry<Integer, Integer> e : pidCount.entrySet()) {
+                    max = Math.max(max, e.getValue());
+                }
+                maxVarPids.put(-i - 1, max);
+            }
+
+            in.close();
+
+            idealFacts = new FactEncodedSet();
+            BufferedReader idealIn = new BufferedReader(new InputStreamReader(new FileInputStream(new File(workspace +
+                    "/ideal.data.txt"))));
+            while ((line = idealIn.readLine()) != null) {
+                if (line.isEmpty()) {
+                    break;
+                }
+                String[] arr = line.split("\t");
+                if (arr[1].equals("<type>") || arr[1].equals("<subClassOf>")) {
+                    continue;
+                }
+                if (entitiesStringMap.containsKey(arr[0]) && entitiesStringMap.containsKey(arr[2]) &&
+                        relationsStringMap.containsKey(arr[1])) {
+                    idealFacts.addFact(entitiesStringMap.get(arr[0]), relationsStringMap.get(arr[1]), entitiesStringMap
+                            .get(arr[2]));
+                }
+            }
+            idealIn.close();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private long encodeSO(int subject, int object) {
+        return ((long) subject) * 1000000000 + object;
+    }
+
+    public List<Integer> getPidList(int subject, int object) {
+        return soPidMap.get(encodeSO(subject, object));
+    }
+
+    public static class OutgoingEdge {
+        // Reversed edges will have pid negative.
+        public int pid, oid;
+
+        public OutgoingEdge(int pid, int oid) {
+            this.pid = pid;
+            this.oid = oid;
+        }
+    }
+
+    public static class FactEncodedSet {
+        private static final long BASE = 1000000000;
+        private HashSet<Long> set = new HashSet<>();
+
+        public static long encode(int subject, int predicate, int object) {
+            return (((long) subject) * BASE + predicate) * BASE + object;
+        }
+
+        public void addFact(int subject, int predicate, int object) {
+            set.add(encode(subject, predicate, object));
+        }
+
+        public boolean containFact(int subject, int predicate, int object) {
+            return set.contains(encode(subject, predicate, object));
+        }
+    }
+
+    public static class TypeEncodedSet {
+        private static final long BASE = 1000000000;
+        private HashSet<Long> set = new HashSet<>();
+
+        public static long encode(int subject, int predicate) {
+            return ((long) subject) * BASE + predicate;
+        }
+
+        public void addType(int subject, int predicate) {
+            set.add(encode(subject, predicate));
+        }
+
+        public boolean containType(int subject, int predicate) {
+            return set.contains(encode(subject, predicate));
+        }
+    }
+}
