@@ -38,33 +38,33 @@ import java.util.logging.Logger;
  * |a|          = 7.810249675906654
  * tan(a)       = -6.685231390246571E-6 + 1.0000103108981198i
  ******************************************************************************/
+
 /******************************************************************************
- *  Compilation:  javac Complex.java
- *  Execution:    java Complex
- *
- *  Data type for complex numbers.
- *
- *  The data type is "immutable" so once you create and initialize
- *  a Complex object, you cannot change it. The "final" keyword
- *  when declaring re and im enforces this rule, making it a
- *  compile-time error to change the .re or .im instance variables after
- *  they've been initialized.
- *
- *  % java Complex
- *  a            = 5.0 + 6.0i
- *  b            = -3.0 + 4.0i
- *  Re(a)        = 5.0
- *  Im(a)        = 6.0
- *  b + a        = 2.0 + 10.0i
- *  a - b        = 8.0 + 2.0i
- *  a * b        = -39.0 + 2.0i
- *  b * a        = -39.0 + 2.0i
- *  a / b        = 0.36 - 1.52i
- *  (a / b) * b  = 5.0 + 6.0i
- *  conj(a)      = 5.0 - 6.0i
- *  |a|          = 7.810249675906654
- *  tan(a)       = -6.685231390246571E-6 + 1.0000103108981198i
- *
+ * Compilation:  javac Complex.java
+ * Execution:    java Complex
+ * <p>
+ * Data type for complex numbers.
+ * <p>
+ * The data type is "immutable" so once you create and initialize
+ * a Complex object, you cannot change it. The "final" keyword
+ * when declaring re and im enforces this rule, making it a
+ * compile-time error to change the .re or .im instance variables after
+ * they've been initialized.
+ * <p>
+ * % java Complex
+ * a            = 5.0 + 6.0i
+ * b            = -3.0 + 4.0i
+ * Re(a)        = 5.0
+ * Im(a)        = 6.0
+ * b + a        = 2.0 + 10.0i
+ * a - b        = 8.0 + 2.0i
+ * a * b        = -39.0 + 2.0i
+ * b * a        = -39.0 + 2.0i
+ * a / b        = 0.36 - 1.52i
+ * (a / b) * b  = 5.0 + 6.0i
+ * conj(a)      = 5.0 - 6.0i
+ * |a|          = 7.810249675906654
+ * tan(a)       = -6.685231390246571E-6 + 1.0000103108981198i
  ******************************************************************************/
 
 class Complex {
@@ -441,62 +441,59 @@ public class HolEClient implements EmbeddingClient {
         }
     }
 
-    @Override
-    public double getScore(int subject, int predicate, int object) {
-        int n = (int) (Math.pow(2, Math.ceil(Math.log(eLength) / Math.log(2) - 1e-6)) + 1e-6);
-        Complex s[] = new Complex[n];
-        Complex o[] = new Complex[n];
-        for (int i = 0; i < eLength; ++i) {
-            s[i] = new Complex(entitiesEmbedding[subject].value[i], 0);
-            o[i] = new Complex(entitiesEmbedding[object].value[i], 0);
-        }
-        for (int i = eLength; i < n; ++i) {
-            s[i] = new Complex(0, 0);
-            o[i] = new Complex(0, 0);
-        }
-
-        Complex[] r = FFT.cconvolve(s, o);
-        double result = 0;
-        for (int i = 0; i < eLength; ++i) {
-            result += r[i].re() * relationsEmbedding[predicate].value[i];
-        }
-        return 1.0 / (1 + Math.exp(-result));
-    }
-
 //    @Override
 //    public double getScore(int subject, int predicate, int object) {
-//        double y[] = new double[eLength];
-//        double a[] = new double[eLength];
-//        double x2[] = new double[eLength];
-//
-//        y[0] = 0;
-//        a[0] = entitiesEmbedding[object].value[0];
-//
-//        for (int i = 1; i < eLength; ++i) {
-//            a[i] = entitiesEmbedding[object].value[eLength - i];
-//        }
-//
+//        int n = (int) (Math.pow(2, Math.ceil(Math.log(eLength) / Math.log(2) - 1e-6)) + 1e-6);
+//        Complex s[] = new Complex[n];
+//        Complex o[] = new Complex[n];
 //        for (int i = 0; i < eLength; ++i) {
-//            y[0] += entitiesEmbedding[subject].value[i] * a[i];
+//            s[i] = new Complex(entitiesEmbedding[subject].value[i], 0);
+//            o[i] = new Complex(entitiesEmbedding[object].value[i], 0);
 //        }
-//        for (int k = 1; k < eLength; ++k) {
-//            y[k] = 0;
-//            for (int i = 1; i < eLength; ++i) {
-//                x2[i] = a[i - 1];
-//            }
-//            x2[0] = a[eLength - 1];
-//            for (int i = 0; i < eLength; ++i) {
-//                a[i] += x2[i];
-//                y[k] += entitiesEmbedding[subject].value[i] * x2[i];
-//            }
+//        for (int i = eLength; i < n; ++i) {
+//            s[i] = new Complex(0, 0);
+//            o[i] = new Complex(0, 0);
 //        }
 //
+//        Complex[] r = FFT.cconvolve(s, o);
 //        double result = 0;
 //        for (int i = 0; i < eLength; ++i) {
-//            result += y[i] * relationsEmbedding[predicate].value[i];
+//            result += r[i].re() * relationsEmbedding[predicate].value[i];
 //        }
 //        return 1.0 / (1 + Math.exp(-result));
 //    }
+
+    @Override
+    public double getScore(int subject, int predicate, int object) {
+        double y = 0, result = 0;
+        double a[] = new double[eLength];
+        double x2[] = new double[eLength];
+
+        a[0] = entitiesEmbedding[object].value[0];
+        for (int i = 1; i < eLength; ++i) {
+            a[i] = entitiesEmbedding[object].value[eLength - i];
+        }
+
+        for (int i = 0; i < eLength; ++i) {
+            y += entitiesEmbedding[subject].value[i] * a[i];
+        }
+        result += y * relationsEmbedding[predicate].value[0];
+
+        for (int k = 1; k < eLength; ++k) {
+            y = 0;
+            for (int i = 1; i < eLength; ++i) {
+                x2[i] = a[i - 1];
+            }
+            x2[0] = a[eLength - 1];
+            for (int i = 0; i < eLength; ++i) {
+                a[i] += x2[i];
+                y += entitiesEmbedding[subject].value[i] * x2[i];
+            }
+            result += y * relationsEmbedding[predicate].value[k];
+        }
+
+        return 1.0 / (1 + Math.exp(-result));
+    }
 
     @Override
     public double getInvertedRank(int subject, int predicate, int object) {
