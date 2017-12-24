@@ -8,13 +8,16 @@ import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-
 public class HolEClient implements EmbeddingClient {
     public static final Logger LOGGER = Logger.getLogger(HolEClient.class.getName());
+    public static boolean CACHED_CORREL = false;
+
     private int nEntities, nRelations, eLength;
     private DoubleVector[] entitiesEmbedding, relationsEmbedding;
     private FactEncodedSetPerPredicate[] trueFacts;
     private ConcurrentHashMap<Long, Double>[] cachedRankQueries;
+
+    double correl[][][];
 
     public HolEClient(String workspace) {
         LOGGER.info("Loading embedding HolE client from '" + workspace + ".");
@@ -61,26 +64,48 @@ public class HolEClient implements EmbeddingClient {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        if (CACHED_CORREL) {
+            correl = new double[nEntities][nEntities][];
+        }
     }
 
+    public static double[] getCircularCorrelation(double[] s, double[] o) {
+        double[] r = new double[s.length];
+        int t = 0;
+        for (int k = 0; k < r.length; ++k) {
+            r[k] = 0;
+            for (int i = 0; i < r.length; ++i) {
+                t = i + k;
+                if (t >= r.length) {
+                    t -= r.length;
+                }
+                r[k] += s[i] * o[t];
+            }
+        }
+        return r;
+    }
 
     @Override
     public double getScore(int subject, int predicate, int object) {
-        double result = 0, y;
-        int oIndex;
-        for (int k = 0; k < eLength; ++k) {
-            y = 0;
-            for (int i = 0; i < eLength; ++i) {
-                oIndex = k + i;
-                if (oIndex >= eLength) {
-                    oIndex -= eLength;
-                }
-                y += entitiesEmbedding[subject].value[i] * entitiesEmbedding[object].value[oIndex];
+        if (CACHED_CORREL) {
+            if (correl[subject][object] == null) {
+                correl[subject][object] = getCircularCorrelation(entitiesEmbedding[subject].value,
+                        entitiesEmbedding[object].value);
             }
-            result += y * relationsEmbedding[predicate].value[k];
-        }
+            double result = 0;
+            for (int i = 0; i < eLength; ++i) {
+                result += correl[subject][object][i] * relationsEmbedding[predicate].value[i];
+            }
+            return 1.0 / (1 + Math.exp(-result));
 
-        return 1.0 / (1 + Math.exp(-result));
+        } else {
+            double[] r = getCircularCorrelation(entitiesEmbedding[subject].value, entitiesEmbedding[object].value);
+            double result = 0;
+            for (int k = 0; k < eLength; ++k) {
+                result += r[k] * relationsEmbedding[predicate].value[k];
+            }
+            return 1.0 / (1 + Math.exp(-result));
+        }
     }
 
     @Override
@@ -96,10 +121,10 @@ public class HolEClient implements EmbeddingClient {
             if (i == subject || i == object) {
                 continue;
             }
-            if (!trueFacts[predicate].containFact(i, object) && getScore(i, predicate, object) > score) {
+            if (!trueFacts[predicate].containFact(i, object) && getScore(i, predicate, object) > score + 1e-6) {
                 ++rankH;
             }
-            if (!trueFacts[predicate].containFact(subject, i) && getScore(subject, predicate, i) > score) {
+            if (!trueFacts[predicate].containFact(subject, i) && getScore(subject, predicate, i) > score + 1e-6) {
                 ++rankT;
             }
         }

@@ -94,10 +94,10 @@ public class TransEClient implements EmbeddingClient {
             if (i == subject || i == object) {
                 continue;
             }
-            if (!trueFacts[predicate].containFact(i, object) && getScore(i, predicate, object) > score) {
+            if (!trueFacts[predicate].containFact(i, object) && getScore(i, predicate, object) > score + 1e-6) {
                 ++rankH;
             }
-            if (!trueFacts[predicate].containFact(subject, i) && getScore(subject, predicate, i) > score) {
+            if (!trueFacts[predicate].containFact(subject, i) && getScore(subject, predicate, i) > score + 1e-6) {
                 ++rankT;
             }
         }
