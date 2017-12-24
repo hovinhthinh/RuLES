@@ -45,6 +45,10 @@ public class FB15KDecoder {
                     entities[i].link = entities[i].link.replace("http", "https");
 
                     String html = Crawler.getContentFromUrl(entities[i].link);
+                    if (html == null) {
+                        System.out.println("err: " + entities[i].link);
+                        continue;
+                    }
                     entities[i].entity = TParser.getContent(html, "<span class=\"wikibase-title-label\">", "</span>");
 
                     entities[i].description = TParser.getContent(html, "<div " +
@@ -59,6 +63,7 @@ public class FB15KDecoder {
     }
 
     // args: <Freebase/wikidata mapping file> <meta file>
+    // write output to id2info
     public static void main(String[] args) throws Exception {
         args = new String[]{"../data/fb15k/original/fb2w.nt.gz", "../data/fb15k/meta.txt"};
 
@@ -89,17 +94,20 @@ public class FB15KDecoder {
             entities[i].code = in.readLine();
         }
         in.close();
-        in = new BufferedReader(new InputStreamReader(new FileInputStream(new File("id2info"))));
-        for (int i = 0; i < nEntities; ++i) {
-            line = in.readLine();
-            String[] arr = line.split("\t");
-            entities[i].code = arr[0];
-            entities[i].entity = arr[1];
-            entities[i].link = arr[2];
-            entities[i].description = arr[3];
+        try {
+            in = new BufferedReader(new InputStreamReader(new FileInputStream(new File("id2info"))));
+            for (int i = 0; i < nEntities; ++i) {
+                line = in.readLine();
+                String[] arr = line.split("\t");
+                entities[i].code = arr[0];
+                entities[i].entity = arr[1];
+                entities[i].link = arr[2];
+                entities[i].description = arr[3];
 
+            }
+            in.close();
+        } catch (Exception e) {
         }
-        in.close();
         int nWorkers = 16;
         ArrayList<Thread> threads = new ArrayList<>();
         for (int i = 0; i < nWorkers; ++i) {
