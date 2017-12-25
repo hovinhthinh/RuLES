@@ -43,13 +43,13 @@ public class Main {
         options.addOption(option);
 
         // maxNumAtoms
-        option = new Option("na", "max_num_atom", true, "Maximum number of atoms (default: 5)");
+        option = new Option("na", "max_num_atom", true, "Maximum number of atoms (default: 4)");
         option.setRequired(false);
         options.addOption(option);
 
         // maxNumUnaryPositiveAtoms
         option = new Option("nupa", "max_num_unary_pos_atom", true, "Maximum number of unary positive atoms (default:" +
-                " INF)");
+                " 1)");
         option.setRequired(false);
         options.addOption(option);
 
@@ -111,7 +111,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-//        args = new String[]{"-w", "../data/imdb"};
+//        args = new String[]{"-w", "../data/imdb", "-ew", "0", "-nupa", "0", "-nna", "0"};
         MinerConfig config = new MinerConfig();
 
         // Get config.
