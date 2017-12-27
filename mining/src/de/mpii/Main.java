@@ -116,7 +116,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-        args = new String[]{"-w", "../data/imdb"};
+//        args = new String[]{"-w", "../data/imdb"};
         MinerConfig config = new MinerConfig();
 
         // Get config.
