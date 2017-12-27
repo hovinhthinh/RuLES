@@ -28,6 +28,8 @@ public class KnowledgeGraph {
     public HashMap<Integer, Integer> maxVarPids;
     public HashSet<Integer>[] danglingPids;
 
+    public HashMap<Integer, Integer> pid1Pid2Count; // handle disjunction
+
     public KnowledgeGraph(String workspace) {
         LOGGER.info("Loading knowledge graph from '" + workspace + "'.");
         String[] spl;
@@ -113,7 +115,7 @@ public class KnowledgeGraph {
 
                 long soCode = encodeSO(s, o);
                 if (!soPidMap.containsKey(soCode)) {
-                    soPidMap.put(soCode, new LinkedList<>());
+                    soPidMap.put(soCode, new ArrayList<>());
                 }
                 List<Integer> pidList = soPidMap.get(soCode);
                 pidList.add(p);
@@ -125,6 +127,20 @@ public class KnowledgeGraph {
                 pidCount = maxVarPidsTemp.get(-p - 1);
                 pidCount.put(o, pidCount.getOrDefault(o, 0) + 1);
             }
+
+            pid1Pid2Count = new HashMap<>();
+            for (long so : soPidMap.keySet()) {
+                List<Integer> pids = soPidMap.get(so);
+                for (int p1 : pids) {
+                    for (int p2 : pids) {
+                        if (p1 < p2) {
+                            int code = p1 * nRelations + p2;
+                            pid1Pid2Count.put(code, pid1Pid2Count.getOrDefault(code, 0) + 1);
+                        }
+                    }
+                }
+            }
+
             for (int i = 0; i < nRelations; ++i) {
                 HashMap<Integer, Integer> pidCount = maxVarPidsTemp.get(i);
                 int max = 0;

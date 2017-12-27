@@ -439,4 +439,24 @@ public class Rule {
         }
         return sb.toString().trim();
     }
+
+    public String getDisjunctionString(int pid1, int pid2, String[] relationsString, String[] typesString) {
+        if (atoms.size() == 0) {
+            return null;
+        }
+        int oldPid = atoms.get(0).pid;
+        atoms.get(0).pid = pid1;
+        StringBuilder sb = new StringBuilder(getAtomString(atoms.get(0), relationsString, typesString)).append(" OR ");
+        atoms.get(0).pid = pid2;
+        sb.append(getAtomString(atoms.get(0), relationsString, typesString)).append(" :- ");
+        atoms.get(0).pid = oldPid;
+        for (int i = 1; i < atoms.size(); ++i) {
+            if (i > 1) {
+                sb.append(", ");
+            }
+            sb.append(getAtomString(atoms.get(i), relationsString, typesString));
+        }
+        return sb.toString().trim();
+    }
+
 }

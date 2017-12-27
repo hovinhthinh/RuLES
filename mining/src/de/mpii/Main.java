@@ -26,6 +26,11 @@ public class Main {
         option.setRequired(false);
         options.addOption(option);
 
+        // disjunction
+        option = new Option("dj", "disjunction", false, "Mine rule with disjunction in the head");
+        option.setRequired(false);
+        options.addOption(option);
+
         // embeddingModel
         option = new Option("em", "embedding_model", true, "Embedding model");
         option.setRequired(false);
@@ -111,7 +116,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-//        args = new String[]{"-w", "../data/imdb", "-ew", "0", "-nupa", "0", "-nna", "0"};
+        args = new String[]{"-w", "../data/imdb"};
         MinerConfig config = new MinerConfig();
 
         // Get config.
@@ -182,6 +187,9 @@ public class Main {
         }
         if (cmd.hasOption("pca")) {
             config.usePCAConf = true;
+        }
+        if (cmd.hasOption("dj")) {
+            config.disjunction = true;
         }
 
         String output = cmd.getOptionValue("w") + "/rules.txt";

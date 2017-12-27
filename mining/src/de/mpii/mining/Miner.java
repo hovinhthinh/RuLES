@@ -217,7 +217,9 @@ public class Miner implements Runnable {
 
         // If the monotonic part is closed, then set stats.
         if (r.closed) {
-            stats.simplify(knowledgeGraph, embeddingClient, config);
+            stats.simplify(knowledgeGraph, embeddingClient, config, config.disjunction && (r.atoms.size() < config
+                    .maxNumAtoms ? true :
+                    false));
             r.stats = stats;
         }
 
@@ -234,29 +236,54 @@ public class Miner implements Runnable {
                 break;
             }
             matchRule(r);
+            // Output disjunction.
+            if (r.stats != null && r.stats.disjunctionStats != null) {
+                for (RuleStats.DisjunctionStats dstats : r.stats.disjunctionStats) {
+                    System.out.printf("%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\tinc:\t%.3f\n", r
+                                    .getDisjunctionString
+                                            (dstats.pid1, dstats.pid2, knowledgeGraph.relationsString, knowledgeGraph
+                                                    .typesString),
+                            dstats.hc, config.usePCAConf ? "pca" : "", dstats.conf, dstats.mrr, dstats.scr,
+                            dstats.inreaseScr);
+                    synchronized (output) {
+                        output.printf("%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\tinc:\t%.3f\n", r
+                                        .getDisjunctionString
+                                                (dstats.pid1, dstats.pid2, knowledgeGraph.relationsString, knowledgeGraph
+                                                        .typesString),
+                                dstats.hc, config.usePCAConf ? "pca" : "", dstats.conf, dstats.mrr, dstats.scr,
+                                dstats.inreaseScr);
+                        output.flush();
+                    }
+                }
+            }
             if (RulePruner.isContentPruned(r, config)) {
                 continue;
             }
             if (r.stats != null) {
-                for (int pid = 0; pid < knowledgeGraph.nRelations; ++pid) {
-                    if (r.stats.scr[pid] != -1) {
-                        r.atoms.get(0).pid = pid;
-                        System.out.printf("%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\n", r.getString
-                                        (knowledgeGraph.relationsString, knowledgeGraph.typesString),
-                                r.stats.headCoverage[pid], config.usePCAConf ? "pca" : "", r.stats.confidence[pid], r
-                                        .stats
-                                        .mrr[pid], r.stats
-                                        .scr[pid]);
-                        synchronized (output) {
-                            output.printf("%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\n", r.getString
+                if (!config.disjunction) {
+                    for (int pid = 0; pid < knowledgeGraph.nRelations; ++pid) {
+                        if (r.stats.scr[pid] != -1) {
+                            r.atoms.get(0).pid = pid;
+                            System.out.printf("%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\n", r.getString
                                             (knowledgeGraph.relationsString, knowledgeGraph.typesString),
-                                    r.stats.headCoverage[pid], config.usePCAConf ? "pca" : "", r.stats
-                                            .confidence[pid], r.stats.mrr[pid], r.stats.scr[pid]);
-                            output.flush();
+                                    r.stats.headCoverage[pid], config.usePCAConf ? "pca" : "", r.stats.confidence[pid], r
+                                            .stats
+                                            .mrr[pid], r.stats
+                                            .scr[pid]);
+                            synchronized (output) {
+                                output.printf("%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\n", r.getString
+                                                (knowledgeGraph.relationsString, knowledgeGraph.typesString),
+                                        r.stats.headCoverage[pid], config.usePCAConf ? "pca" : "", r.stats
+                                                .confidence[pid], r.stats.mrr[pid], r.stats.scr[pid]);
+                                output.flush();
+                            }
                         }
                     }
+                    r.atoms.get(0).pid = -1;
                 }
-                r.atoms.get(0).pid = -1;
+            }
+            if (config.disjunction && r.atoms.size() >= config.maxNumAtoms - 1) {
+                continue;
             }
             if (r.atoms.size() >= config.maxNumAtoms) { // TODO: Migated from Pruner.
                 continue;
