@@ -214,7 +214,7 @@ public class Main {
         Collections.sort(rules, new Comparator<String[]>() {
             @Override
             public int compare(String[] o1, String[] o2) {
-                return o2[o2.length - 1].compareTo(o1[o1.length - 1]);
+                return o2[8].compareTo(o1[8]);
             }
         });
         PrintWriter out = new PrintWriter(new File(output + ".sorted"));
