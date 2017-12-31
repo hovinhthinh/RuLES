@@ -28,7 +28,7 @@ public class KnowledgeGraph {
     public HashMap<Integer, Integer> maxVarPids;
     public HashSet<Integer>[] danglingPids;
 
-    public HashMap<Integer, Integer> pid1Pid2Count; // handle disjunction
+    public HashMap<Integer, Integer> pid1Pid2Count, pid1Pid2CountReversed; // handle disjunction
 
     public KnowledgeGraph(String workspace) {
         LOGGER.info("Loading knowledge graph from '" + workspace + "'.");
@@ -140,6 +140,23 @@ public class KnowledgeGraph {
                     }
                 }
             }
+            pid1Pid2CountReversed = new HashMap<>();
+            for (long so : soPidMap.keySet()) {
+                int subject = (int)(so / 1000000), object = (int)(so % 1000000);
+                List<Integer> pids = soPidMap.get(so);
+                List<Integer> pidsR = soPidMap.get(encodeSO(object, subject));
+                if (pidsR == null) {
+                    continue;
+                }
+                for (int p1 : pids) {
+                    for (int p2 : pidsR) {
+                        if (p1 < p2) {
+                            int code = p1 * nRelations + p2;
+                            pid1Pid2CountReversed.put(code, pid1Pid2CountReversed.getOrDefault(code, 0) + 1);
+                        }
+                    }
+                }
+            }
 
             for (int i = 0; i < nRelations; ++i) {
                 HashMap<Integer, Integer> pidCount = maxVarPidsTemp.get(i);
@@ -183,7 +200,7 @@ public class KnowledgeGraph {
     }
 
     private long encodeSO(int subject, int object) {
-        return ((long) subject) * 1000000000 + object;
+        return ((long) subject) * 1000000 + object; // not change the base here.
     }
 
     public List<Integer> getPidList(int subject, int object) {

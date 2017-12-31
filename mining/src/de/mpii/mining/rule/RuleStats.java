@@ -178,6 +178,72 @@ public class RuleStats {
                         }
                     }
                 }
+                if (config.usePCAConf) {
+                    continue;
+                }
+                for (int pid2 = pid1 + 1; pid2 < confidence.length; ++pid2) {
+                    // calculate reversed score.
+                    int ruleSupport2 = 0;
+                    for (SOInstance h : headInstances) {
+                        if (graph.trueFacts.containFact(h.object, pid2, h.subject)) {
+                            ++ruleSupport2;
+                        }
+                    }
+                    double scr2 = (bodySupport == 0 ? 0 : (double) ruleSupport2 / bodySupport) * (1 - config
+                            .embeddingWeight);
+                    if (config.embeddingWeight > 0 && bodySupport != ruleSupport2) {
+                        double mrr2 = 0;
+                        for (SOInstance h : headInstances) {
+                            if (!graph.trueFacts.containFact(h.object, pid2, h.subject)) {
+                                mrr2 += embeddingClient.getInvertedRank(h.object, pid2, h.subject);
+                            }
+                        }
+                        mrr2 /= (bodySupport - ruleSupport2);
+                        scr2 += mrr2 * config.embeddingWeight;
+                    }
+
+                    int ruleSupport = 0;
+                    for (SOInstance h : headInstances) {
+                        if (graph.trueFacts.containFact(h.subject, pid1, h.object) || graph.trueFacts.containFact(h
+                                .object, pid2, h.subject)) {
+                            ++ruleSupport;
+                        }
+                    }
+                    double conf, hc;
+                    conf = bodySupport == 0 ? 0 : (double) ruleSupport / bodySupport;
+
+                    int headSupport = graph.pidSOInstances[pid1].size() + graph.pidSOInstances[pid2].size() - graph
+                            .pid1Pid2CountReversed.getOrDefault(pid1 * graph.nRelations + pid2, 0);
+                    hc = headSupport == 0 ? 0 : (double) ruleSupport / headSupport;
+
+                    if (hc >= config.minHeadCoverage) {
+                        // Call embedding service.
+                        if (bodySupport != ruleSupport) {
+                            double scr = conf * (1 - config.embeddingWeight);
+                            double mrr = 0;
+                            if (config.embeddingWeight > 0) {
+                                // Use MRR.
+                                for (SOInstance h : headInstances) {
+                                    if (!graph.trueFacts.containFact(h.subject, pid1, h.object) && !graph.trueFacts
+                                            .containFact(h.object, pid2, h.subject)) {
+                                        mrr += Math.max(embeddingClient.getInvertedRank(h.subject, pid1, h.object),
+                                                embeddingClient.getInvertedRank(h.object, pid2, h.subject));
+                                    }
+                                }
+                                mrr /= (bodySupport - ruleSupport);
+                                scr += mrr * config.embeddingWeight;
+                            } else {
+                                mrr = -1;
+                            }
+                            double increaseScr = scr - Math.max(0, Math.max(this.scr[pid1], scr2));
+                            if (increaseScr >= 1e-3) {
+                                // Output.
+                                disjunctionStats.add(new DisjunctionStats(pid1, -pid2-1, hc, conf, mrr, scr,
+                                        increaseScr));
+                            }
+                        }
+                    }
+                }
             }
         }
 

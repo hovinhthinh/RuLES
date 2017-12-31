@@ -418,10 +418,17 @@ public class Rule {
         } else {
             BinaryAtom atom = (BinaryAtom) a;
             StringBuilder sb = new StringBuilder(atom.negated ? "not " : "");
-            sb.append(atom.pid == -1 ? "<?>" : relationsString[atom.pid]).append("(V").append(atom.sid).append
-                    (", V").append
-                    (atom.oid).append
-                    (")");
+            if (atom.pid < 0) {
+                sb.append(relationsString[-1-atom.pid]).append("(V").append(atom.oid).append
+                        (", V").append
+                        (atom.sid).append
+                        (")");
+            } else {
+                sb.append(relationsString[atom.pid]).append("(V").append(atom.sid).append
+                        (", V").append
+                        (atom.oid).append
+                        (")");
+            }
             return sb.toString();
         }
     }
