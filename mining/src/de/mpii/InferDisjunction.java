@@ -16,14 +16,41 @@ import java.util.logging.Logger;
 /**
  * Created by hovinhthinh on 11/27/17.
  */
-public class Infer {
-    public static final Logger LOGGER = Logger.getLogger(Infer.class.getName());
+public class InferDisjunction {
+    public static class FactEncodedSet {
+        private static final long BASE = 1000000000;
+        private static final long BASE2 = 10000;
+        private HashSet<Long> set = new HashSet<>();
+
+        public static long encode(int subject, int predicate1, int predicate2, int object) {
+            if (predicate1 > predicate2) {
+                int swap = predicate1;
+                predicate1 = predicate2;
+                predicate2 = swap;
+            }
+            return (((long) subject) * BASE + ((long) predicate1) * BASE2 + predicate2) * BASE + object;
+        }
+
+        public void addFact(int subject, int predicate1, int predicate2, int object) {
+            set.add(encode(subject, predicate1, predicate2, object));
+        }
+
+        public boolean containFact(int subject, int predicate1, int predicate2, int object) {
+            return set.contains(encode(subject, predicate1, predicate2, object));
+        }
+    }
+
+    public static final Logger LOGGER = Logger.getLogger(InferDisjunction.class.getName());
 
     public static KnowledgeGraph knowledgeGraph;
 
     public static Rule parseRule(KnowledgeGraph graph, String ruleString) {
+        ruleString = ruleString.substring(ruleString.indexOf(":") + 3);
         Rule r = new Rule(0);
         HashMap<String, Integer> varsMap = new HashMap();
+        varsMap.put("V0", 0);
+        varsMap.put("V1", 1);
+        r.atoms.add(new BinaryAtom(false, false, 0, -1, 1));
         for (int i = 0; i < ruleString.length(); ++i) {
             int j = i;
             while (ruleString.charAt(j) != ')') {
@@ -176,7 +203,8 @@ public class Infer {
     // args: <workspace> <file> <top> <new_facts>
     // Process first <top> rules of the <file> (top by lines, not by scr)
     public static void main(String[] args) throws Exception {
-//        args = new String[]{"../data/imdb/", "../data/imdb/rules.transe.txt.sorted", "325", "new_facts.txt"};
+//        args = new String[]{"../data/imdb/", "../data/imdb/rules.transe.disjunction2.txt.sorted.rm0.02.sortinc",
+//                "5", "tmp"};
         int top = Integer.parseInt(args[2]);
         knowledgeGraph = new KnowledgeGraph(args[0]);
 
@@ -185,36 +213,49 @@ public class Infer {
         String line;
         int ruleCount = 0;
 
-        KnowledgeGraph.FactEncodedSet mined = new KnowledgeGraph.FactEncodedSet();
+        FactEncodedSet mined = new FactEncodedSet();
         int unknownNum = 0;
         int total = 0;
+        double totalInc = 0;
         while ((line = in.readLine()) != null) {
             ++ruleCount;
             if (line.isEmpty() || ruleCount > top) {
                 break;
             }
-            String rule = line.split("\t")[0];
+            String[] arr = line.split("\t");
+            totalInc += Double.parseDouble(arr[10]);
+            String rule = arr[0];
             LOGGER.info("Inferring rule: " + rule);
             Rule r = parseRule(knowledgeGraph, rule);
             HashSet<SOInstance> instances = matchRule(r);
             System.out.println("body_support: " + instances.size());
-            int pid = r.atoms.get(0).pid;
+            rule = rule.substring(0, rule.indexOf(" :"));
+            String pid1String = rule.substring(0, rule.indexOf("("));
+            String pid2String = rule.substring(rule.indexOf("OR") + 3, rule.lastIndexOf("("));
+
+            int pid1 = knowledgeGraph.relationsStringMap.get(pid1String);
+            int pid2 = knowledgeGraph.relationsStringMap.get(pid2String);
+
             for (SOInstance so : instances) {
-                if (!mined.containFact(so.subject, pid, so.object) && !knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {
-                    mined.addFact(so.subject, pid, so.object);
+                if (!mined.containFact(so.subject, pid1, pid2, so.object) && !knowledgeGraph.trueFacts.containFact(so
+                        .subject, pid1, so.object) && !knowledgeGraph.trueFacts.containFact(so
+                        .subject, pid2, so.object)) {
+                    mined.addFact(so.subject, pid1, pid2, so.object);
                     ++total;
-                    boolean unknown = !knowledgeGraph.idealFacts.containFact(so.subject, pid, so.object);
+                    boolean unknown = !knowledgeGraph.idealFacts.containFact(so.subject, pid1, so.object) &&
+                            !knowledgeGraph.idealFacts.containFact(so.subject, pid2, so.object);
                     if (unknown) {
                         ++unknownNum;
                     }
                     out.printf("%s\t%s\t%s\t%s\n", knowledgeGraph.entitiesString[so.subject], knowledgeGraph
-                            .relationsString[pid], knowledgeGraph.entitiesString[so.object], (unknown == false) ?
+                            .relationsString[pid1], knowledgeGraph.relationsString[pid2], knowledgeGraph.entitiesString[so.object], (unknown == false) ?
                             "TRUE" : "null");
                 }
             }
         }
         in.close();
         out.close();
-        LOGGER.info(String.format("#predictions = %d, unknown_rate = %.3f", total, (double) unknownNum / total));
+        LOGGER.info(String.format("#predictions = %d, unknown_rate = %.3f, average_econf_inc = %.3f", total, (double)
+                unknownNum / total, totalInc / top));
     }
 }
