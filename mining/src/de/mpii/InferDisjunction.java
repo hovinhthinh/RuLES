@@ -236,20 +236,41 @@ public class InferDisjunction {
             int pid1 = knowledgeGraph.relationsStringMap.get(pid1String);
             int pid2 = knowledgeGraph.relationsStringMap.get(pid2String);
 
+            boolean reversed = false;
+            if (rule.contains("(V1, V0)")) {
+                reversed = true;
+            }
             for (SOInstance so : instances) {
-                if (!mined.containFact(so.subject, pid1, pid2, so.object) && !knowledgeGraph.trueFacts.containFact(so
-                        .subject, pid1, so.object) && !knowledgeGraph.trueFacts.containFact(so
-                        .subject, pid2, so.object)) {
-                    mined.addFact(so.subject, pid1, pid2, so.object);
-                    ++total;
-                    boolean unknown = !knowledgeGraph.idealFacts.containFact(so.subject, pid1, so.object) &&
-                            !knowledgeGraph.idealFacts.containFact(so.subject, pid2, so.object);
-                    if (unknown) {
-                        ++unknownNum;
+                if (!reversed) {
+                    if (!mined.containFact(so.subject, pid1, pid2, so.object) && !knowledgeGraph.trueFacts.containFact(so
+                            .subject, pid1, so.object) && !knowledgeGraph.trueFacts.containFact(so
+                            .subject, pid2, so.object)) {
+                        mined.addFact(so.subject, pid1, pid2, so.object);
+                        ++total;
+                        boolean unknown = !knowledgeGraph.idealFacts.containFact(so.subject, pid1, so.object) &&
+                                !knowledgeGraph.idealFacts.containFact(so.subject, pid2, so.object);
+                        if (unknown) {
+                            ++unknownNum;
+                        }
+                        out.printf("%s\t%s\t%s\t%s\n", knowledgeGraph.entitiesString[so.subject], knowledgeGraph
+                                .relationsString[pid1], knowledgeGraph.relationsString[pid2], knowledgeGraph.entitiesString[so.object], (unknown == false) ?
+                                "TRUE" : "null");
                     }
-                    out.printf("%s\t%s\t%s\t%s\n", knowledgeGraph.entitiesString[so.subject], knowledgeGraph
-                            .relationsString[pid1], knowledgeGraph.relationsString[pid2], knowledgeGraph.entitiesString[so.object], (unknown == false) ?
-                            "TRUE" : "null");
+                } else {
+                    if (!mined.containFact(so.subject, pid1, -1 - pid2, so.object) && !knowledgeGraph.trueFacts
+                            .containFact(so.subject, pid1, so.object) && !knowledgeGraph.trueFacts.containFact(so
+                            .object, pid2, so.subject)) {
+                        mined.addFact(so.subject, pid1, -1 - pid2, so.object);
+                        ++total;
+                        boolean unknown = !knowledgeGraph.idealFacts.containFact(so.subject, pid1, so.object) &&
+                                !knowledgeGraph.idealFacts.containFact(so.object, pid2, so.subject);
+                        if (unknown) {
+                            ++unknownNum;
+                        }
+                        out.printf("%s\t%s\t(R)%s\t%s\n", knowledgeGraph.entitiesString[so.subject], knowledgeGraph
+                                .relationsString[pid1], knowledgeGraph.relationsString[pid2], knowledgeGraph.entitiesString[so.object], (unknown == false) ?
+                                "TRUE" : "null");
+                    }
                 }
             }
         }
