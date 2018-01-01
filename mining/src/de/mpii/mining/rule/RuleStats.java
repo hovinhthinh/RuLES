@@ -178,7 +178,7 @@ public class RuleStats {
                         }
                     }
                 }
-                if (config.usePCAConf) {
+                if (config.usePCAConf || sourceScr[pid1] == -1) {
                     continue;
                 }
                 for (int pid2 = pid1 + 1; pid2 < confidence.length; ++pid2) {
@@ -238,7 +238,7 @@ public class RuleStats {
                             double increaseScr = scr - Math.max(0, Math.max(this.scr[pid1], scr2));
                             if (increaseScr >= 1e-3) {
                                 // Output.
-                                disjunctionStats.add(new DisjunctionStats(pid1, -pid2-1, hc, conf, mrr, scr,
+                                disjunctionStats.add(new DisjunctionStats(pid1, -pid2 - 1, hc, conf, mrr, scr,
                                         increaseScr));
                             }
                         }
