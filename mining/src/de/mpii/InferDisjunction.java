@@ -203,8 +203,8 @@ public class InferDisjunction {
     // args: <workspace> <file> <top> <new_facts>
     // Process first <top> rules of the <file> (top by lines, not by scr)
     public static void main(String[] args) throws Exception {
-//        args = new String[]{"../data/imdb/", "../data/imdb/rules.transe.disjunction2.txt.sorted.rm0.02.sortinc",
-//                "5", "tmp"};
+//        args = new String[]{"../data/imdb/", "../data/imdb/disjunction.ew08.txt.rm0.03",
+//                "20", "tmp"};
         int top = Integer.parseInt(args[2]);
         knowledgeGraph = new KnowledgeGraph(args[0]);
 
@@ -252,7 +252,7 @@ public class InferDisjunction {
                         if (unknown) {
                             ++unknownNum;
                         }
-                        out.printf("%s\t%s\t%s\t%s\n", knowledgeGraph.entitiesString[so.subject], knowledgeGraph
+                        out.printf("%s\t%s\t%s\t%s\t%s\n", knowledgeGraph.entitiesString[so.subject], knowledgeGraph
                                 .relationsString[pid1], knowledgeGraph.relationsString[pid2], knowledgeGraph.entitiesString[so.object], (unknown == false) ?
                                 "TRUE" : "null");
                     }
@@ -267,7 +267,7 @@ public class InferDisjunction {
                         if (unknown) {
                             ++unknownNum;
                         }
-                        out.printf("%s\t%s\t(R)%s\t%s\n", knowledgeGraph.entitiesString[so.subject], knowledgeGraph
+                        out.printf("%s\t%s\t(R)%s\t%s\t%s\n", knowledgeGraph.entitiesString[so.subject], knowledgeGraph
                                 .relationsString[pid1], knowledgeGraph.relationsString[pid2], knowledgeGraph.entitiesString[so.object], (unknown == false) ?
                                 "TRUE" : "null");
                     }
