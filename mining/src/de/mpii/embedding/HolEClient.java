@@ -10,7 +10,10 @@ import java.util.logging.Logger;
 
 public class HolEClient implements EmbeddingClient {
     public static final Logger LOGGER = Logger.getLogger(HolEClient.class.getName());
-    public static boolean CACHED_CORREL = false;
+    // Automatically turn on CACHED_CORREL if nEntities <= this threshold.
+    private static final int CACHED_CORREL_THRESHOLD = 15000;
+
+    private boolean CACHED_CORREL = false;
 
     private int nEntities, nRelations, eLength;
     private DoubleVector[] entitiesEmbedding, relationsEmbedding;
@@ -26,6 +29,9 @@ public class HolEClient implements EmbeddingClient {
             // Read nEntities, nRelations, eLength.
             Scanner metaIn = new Scanner(new File(workspace + "/meta.txt"));
             nEntities = metaIn.nextInt();
+            if (nEntities <= CACHED_CORREL_THRESHOLD) {
+                CACHED_CORREL = true;
+            }
             nRelations = metaIn.nextInt();
             int nClasses = metaIn.nextInt();
             metaIn.close();

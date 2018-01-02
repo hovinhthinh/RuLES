@@ -32,8 +32,8 @@ public class Main {
         options.addOption(option);
 
         // embeddingModel
-        option = new Option("em", "embedding_model", true, "Embedding model");
-        option.setRequired(false);
+        option = new Option("em", "embedding_model", true, "Embedding model ('transe'/'hole')");
+        option.setRequired(true);
         options.addOption(option);
 
         // maxNumVariables

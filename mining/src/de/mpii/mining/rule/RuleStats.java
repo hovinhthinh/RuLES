@@ -117,8 +117,11 @@ public class RuleStats {
         if (withDisjunction) {
             disjunctionStats = new LinkedList<>();
             for (int pid1 = 0; pid1 < confidence.length; ++pid1) {
+                if (sourceScr[pid1] == -1) {
+                    continue;
+                }
                 for (int pid2 = pid1 + 1; pid2 < confidence.length; ++pid2) {
-                    if (sourceScr[pid1] == -1 && sourceScr[pid2] == -1) {
+                    if (sourceScr[pid2] == -1) {
                         continue;
                     }
                     HashSet<Integer> goodS = null;
@@ -177,6 +180,10 @@ public class RuleStats {
                             }
                         }
                     }
+                }
+                if (true) {
+                    // Disable reversed rules.
+                    continue;
                 }
                 if (config.usePCAConf || sourceScr[pid1] == -1) {
                     continue;

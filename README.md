@@ -27,23 +27,33 @@ Below is example of the input file:
 <Too_Beautiful_for_You>     <type>           <wikicat_French-language_films>
 <wikicat_1941_musicals>     <subClassOf>     <wordnet_musical_107019172>
 ```
-We prepared the workspace for IMDB dataset at `./data/imdb/`
+We prepared the workspace for IMDB dataset at `./data/imdb/`, and FB15K at `./data/fb15k/`
 ### 2. Generate training and test set
 ```
 $ bash gen_data.sh <workspace>
 # Ex: $ bash gen_data.sh ./data/imdb/
 ```
-### 3. Train the embedding with TransE
-We currently support TransE as the embedding model.
+### 3. Train the embedding model
+We support following embedding model
+#### 3.1. TransE with AdaGrad
 ```
-$ bash run_transe.sh --workspace <workspace> --margin <margin> --lr <learning_rate> --ncomp <embedding_dimensions>
+$ bash run_transe.sh --workspace <workspace> --margin <margin> --lr <starting_learning_rate> --ncomp
+<embedding_dimensions>
 # Ex: $ bash run_transe.sh --workspace ./data/imdb/ --margin 3 --lr 0.1 --ncomp 50
+# Ex: $ bash run_transe.sh --workspace ./data/fb15k/ --margin 1 --lr 0.1 --ncomp 50
 ```
-The embedding model will run and the embedding data will be stored in file `embedding` in the workspace folder.
+The embedding model will run and the embedding data will be stored in file `transe` in the workspace folder.
+#### 3.2. HolE with AdaGrad
+```
+$ bash run_hole.sh --workspace <workspace> --margin <margin> --lr <starting_learning_rate> --ncomp <embedding_dimensions>
+# Ex: $ bash run_hole.sh --workspace ./data/imdb/ --margin 2 --lr 0.1 --ncomp 150
+# Ex: $ bash run_hole.sh --workspace ./data/fb15k/ --margin 0.1 --lr 0.1 --ncomp 150
+```
+The embedding model will run and the embedding data will be stored in file `hole` in the workspace folder.
 ### 4. Run the mining system
 ```
-$ java -jar mining/build.jar -w <workspace>
-# Ex: $ java -jar mining/build.jar -w ./data/imdb/
+$ java -jar mining/build.jar -w <workspace> -em <embedding_model>
+# Ex: $ java -jar mining/build.jar -w ./data/imdb/ -em transe
 ```
 This command will run the mining system will default config. Output file is at `<workspace>/rules.txt`. Sorted
 version on score is at `<workspace>/rules.txt.sorted`. To see full list of supported parameters, run the jar file
@@ -53,23 +63,25 @@ $ java -jar mining/build.jar
 ```
 The printed message:
 ```
-Missing required options: w
+Missing required options: w, em
 usage: utility-name
  -w,--workspace <arg>                    Path to workspace
  -o,--output <arg>                       Output file path (default: '<workspace>/rules.txt')
  -nv,--max_num_var <arg>                 Maximum number of variables (default: 4)
  -vd,--max_var_deg <arg>                 Maximum variable degree (number of predicates having the same variable) (default: 3)
- -na,--max_num_atom <arg>                Maximum number of atoms (default: 5)
+ -na,--max_num_atom <arg>                Maximum number of atoms (default: 4)
  -nbpa,--max_num_binary_pos_atom <arg>   Maximum number of binary positive atoms (default: INF)
- -nupa,--max_num_unary_pos_atom <arg>    Maximum number of unary positive atoms (default: INF)
+ -nupa,--max_num_unary_pos_atom <arg>    Maximum number of unary positive atoms (default: 1)
  -nna,--max_num_neg_atom <arg>           Maximum number of exception atoms (default: 1)
  -nbna,--max_num_binary_neg_atom <arg>   Maximum number of binary exception atoms (default: 1)
  -nuna,--max_num_unary_neg_atom <arg>    Maximum number of unary exception atoms (default: 1)
  -nupo,--max_num_uniq_pred_occur <arg>   Maximum number of occurrence of each unique predicate (default: 2)
  -hc,--min_hc <arg>                      Minimum head coverage of mined rules (default: 0.02)
  -ec,--min_ec <arg>                      Minimum exception coverage of adding exception atom (default: 0.2)
+ -em,--embedding_model <arg>             Embedding model ('transe'/'hole')
  -ew,--embedding_weight <arg>            Weight of embedding in score function (default: 0.8)
  -pca,--use_pca_conf                     Use pca confidence instead of standard confidence
+ -dj,--disjunction                       Mine rule with disjunction in the head
  -nw,--num_workers <arg>                 Number of parallel workers (default: 8)
 ```
 It is recommended to extend the memory for java job with Xmx option depending on your machine. For example, following command will run the mining system with 100GB RAM.
@@ -78,9 +90,18 @@ $ java -Xmx100G -jar mining/build.jar -w <workspace> -o <outputfile>
 ```
 Mined rules will be outputted to `<outputfile>` and `<outputfile>.sorted`.
 ### 5. Infer new facts
+#### 5.1. Infer facts without disjunction
 ```
 $ bash infer.sh <workspace> <rulesfile> <numrules> <outputfacts>
 # Ex: $ bash infer.sh ./data/imdb/ ./data/imdb/rules.txt.sorted 100 ./data/imdb/new_facts.txt
+```
+This will infer new rules and write to `<outputfacts>`, rules from top `<numrules>` lines will be processed, hence,
+remember to use `<rulesfile>`, which contains sorted rules.
+#### 5.2. Infer facts with disjunction
+(Not completed editting)
+```
+$ bash infer_dj.sh <workspace> <rulesfile> <numrules> <outputfacts>
+# Ex: $ bash infer_dj.sh ./data/imdb/ ./data/imdb/rules.txt.sorted 100 ./data/imdb/new_facts.txt
 ```
 This will infer new rules and write to `<outputfacts>`, rules from top `<numrules>` lines will be processed, hence,
 remember to use `<rulesfile>`, which contains sorted rules.
