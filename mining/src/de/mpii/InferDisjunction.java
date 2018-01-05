@@ -216,7 +216,7 @@ public class InferDisjunction {
         FactEncodedSet mined = new FactEncodedSet();
         int unknownNum = 0;
         int total = 0;
-        double totalInc = 0;
+        double totalInc = 0, totalConf = 0;
         while ((line = in.readLine()) != null) {
             ++ruleCount;
             if (line.isEmpty() || ruleCount > top) {
@@ -224,6 +224,7 @@ public class InferDisjunction {
             }
             String[] arr = line.split("\t");
             totalInc += Double.parseDouble(arr[10]);
+            totalConf += Double.parseDouble(arr[8]);
             String rule = arr[0];
             LOGGER.info("Inferring rule: " + rule);
             Rule r = parseRule(knowledgeGraph, rule);
@@ -276,7 +277,9 @@ public class InferDisjunction {
         }
         in.close();
         out.close();
-        LOGGER.info(String.format("#predictions = %d, unknown_rate = %.3f, average_econf_inc = %.3f", total, (double)
-                unknownNum / total, totalInc / top));
+        LOGGER.info(String.format("#predictions = %d, unknown_rate = %.3f, average_econf = %.3f, average_econf_inc = " +
+                        "%.3f", total,
+                (double)
+                        unknownNum / total, totalConf / top, totalInc / top));
     }
 }
