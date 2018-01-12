@@ -39,7 +39,14 @@ Below is example of the input file:
 <Too_Beautiful_for_You>     <type>           <wikicat_French-language_films>
 <wikicat_1941_musicals>     <subClassOf>     <wordnet_musical_107019172>
 ```
-We prepared the workspace for IMDB dataset at `./data/imdb/`, and FB15K at `./data/fb15k/`
+`Additional textual description`:
+To run SSP embedding model, we can attach additional textual description to file `entities_description.txt`, in which each line represents description of a entity:
+```
+<entity>[tab]<description>
+```
+in which, `<entity>` shouldn't have any space in between.
+
+We prepared the workspace for IMDB dataset at `./data/imdb/`, and FB15K(with entities description) at `./data/fb15k/`
 ### 2. Generate training and test set
 ```
 $ bash gen_data.sh <workspace>
