@@ -194,6 +194,7 @@ class SemanticModel : public TransE {
     storage_vmat<double>::load(v_semantics, fin);
     fin.close();
   }
+
 };
 
 class SemanticModel_Joint : public SemanticModel {
@@ -478,6 +479,45 @@ class SemanticModel_Joint : public SemanticModel {
     TransE::train(last_time);
 
     if (epos % 10 == 0) train_topic();
+  }
+
+  void simple_save_block(const vec& vmatout, ofstream& fout) {
+    for (double v : vmatout) {
+      fout.write(reinterpret_cast<char*>(&v),sizeof(v));  
+    }
+  }
+
+  void simple_save(const string& filename) {
+    ofstream fout(filename, ios::binary);
+    double dim = embedding_entity[0].n_rows;
+    fout.write(reinterpret_cast<char*>(&dim),sizeof(dim)); 
+
+    stringstream ess, rss, vss;
+    int n_entity = count_entity(), n_relation = count_relation();
+
+    for (int i = 0; i < n_entity; ++i) {
+      ess << i << " ";
+      vss << i << " ";
+    }
+    for (int i = 0; i < n_relation; ++i) {
+      rss << i << " ";
+    }
+
+    string tmp;
+    for (int i = 0; i < n_entity; ++i) {
+      ess >> tmp;
+      simple_save_block(embedding_entity[data_model.entity_name_to_id.find(tmp)->second], fout);
+    }
+    for (int i = 0; i < n_relation; ++i) {
+      rss >> tmp;
+      simple_save_block(embedding_relation[data_model.relation_name_to_id.find(tmp)->second], fout);
+    }
+    for (int i = 0; i < n_entity; ++i) {
+      vss >> tmp;
+      simple_save_block(v_semantics[data_model.entity_name_to_id.find(tmp)->second], fout);
+    }
+
+    fout.close();
   }
 };
 

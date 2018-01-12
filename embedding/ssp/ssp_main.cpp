@@ -35,6 +35,7 @@ int main(int argc, char* argv[]) {
   model->run(10000);
   model->test();
 
+  ((SemanticModel_Joint*)model)->simple_save(workspace + "/ssp");
   delete model;
 
   return 0;
