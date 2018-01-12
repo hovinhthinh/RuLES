@@ -1,3 +1,4 @@
+import os.path
 import sys
 from random import shuffle
 
@@ -110,3 +111,27 @@ with open(WORKSPACE + '/valid.txt', 'w') as out:
 with open(WORKSPACE + '/train.txt', 'w') as out:
     for v in range(len(data_encoded)):
         out.write("%d\t%d\t%d\n" % data_encoded[v]);
+
+# Gen description data
+if os.path.isfile(WORKSPACE + "/entities_description.txt"):
+    print('Processing entities description')
+    entity2id = {}
+    e = None
+    with open(WORKSPACE + "/meta.txt") as f:
+        line = f.readline()
+        e = int(line.split("\t")[0])
+        for i in range(e):
+            entity2id[f.readline().strip()] = i
+
+    data = {}
+    with open(WORKSPACE + "/entities_description.txt") as f:
+        for line in f.readlines():
+            arr = line.strip().split("\t")
+            data[entity2id[arr[0]]] = arr[1];
+
+    with open(WORKSPACE + "/e_desc.txt", "w") as f:
+        for i in range(e):
+            if i in data:
+                f.write("%d\t%s\n" % (i, data[i]))
+            else:
+                f.write("%d\t\n" % (i))
