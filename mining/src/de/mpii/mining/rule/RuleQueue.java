@@ -74,7 +74,8 @@ public class RuleQueue {
             if (operationCount % OPERATION_LOG_INTERVAL == 0) {
                 LOGGER.info("RuleBodyQueueSize: " + rulesQueue.size());
             }
-            return rulesQueue.poll(300, TimeUnit.SECONDS);
+            // Wait for 15 min before returning.
+            return rulesQueue.poll(900, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
