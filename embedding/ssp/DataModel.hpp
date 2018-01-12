@@ -1,6 +1,7 @@
 #pragma once
 #include "Import.hpp"
 #include "ModelConfig.hpp"
+#include <sstream>
 
 class DataModel {
  public:
@@ -54,6 +55,8 @@ class DataModel {
 
  public:
   DataModel(const Dataset& dataset) {
+    // Load meta.
+    load_meta(dataset.base_dir + "/meta.txt");
     load_training(dataset.base_dir + dataset.training);
     relation_hpt.resize(set_relation.size());
     relation_tph.resize(set_relation.size());
@@ -126,6 +129,8 @@ class DataModel {
   }
 
   DataModel(const Dataset& dataset, const string& file_zero_shot) {
+    // Load meta.
+    load_meta(dataset.base_dir + "/meta.txt");
     load_training(dataset.base_dir + dataset.training);
 
     relation_hpt.resize(set_relation.size());
@@ -195,12 +200,37 @@ class DataModel {
     }
   }
 
+  void load_meta(const string& filename) {
+    int n_entity, n_relation;
+    fstream fin(filename.c_str());
+    fin >> n_entity >> n_relation;
+    fin.close();
+    std::stringstream ess, rss;
+    for (int i = 0; i < n_entity; ++i) {
+      ess << i << " ";
+    }
+    for (int i = 0; i < n_relation; ++i) {
+      rss << i << " ";
+    }
+    string tmp;
+    for (int i = 0; i < n_entity; ++i) {
+      ess >> tmp;
+      entity_name_to_id.insert(make_pair(tmp, i));
+      entity_id_to_name.push_back(tmp);
+      set_entity.insert(tmp);
+    }
+    for (int i = 0; i < n_relation; ++i) {
+      rss >> tmp;
+      relation_name_to_id.insert(make_pair(tmp, i));
+      relation_id_to_name.push_back(tmp);
+      set_relation.insert(tmp);
+    }
+  }
+
   void load_training(const string& filename) {
     fstream fin(filename.c_str());
-    while (!fin.eof()) {
-      string head, tail, relation;
-      fin >> head >> relation >> tail;
-
+    string head, tail, relation;
+    while (fin >> head >> relation >> tail) {      
       if (entity_name_to_id.find(head) == entity_name_to_id.end()) {
         entity_name_to_id.insert(make_pair(head, entity_name_to_id.size()));
         entity_id_to_name.push_back(head);
@@ -252,12 +282,9 @@ class DataModel {
                     bool self_sampling = false) {
     fstream fin(filename.c_str());
     if (self_sampling == false) {
-      while (!fin.eof()) {
-        string head, tail, relation;
-        int flag_true;
-
-        fin >> head >> relation >> tail;
-        fin >> flag_true;
+      string head, tail, relation;
+      int flag_true;
+      while (fin >> head >> relation >> tail >> flag_true) {
 
         if (entity_name_to_id.find(head) == entity_name_to_id.end()) {
           entity_name_to_id.insert(make_pair(head, entity_name_to_id.size()));
@@ -293,11 +320,9 @@ class DataModel {
             relation_name_to_id[relation]));
       }
     } else {
-      while (!fin.eof()) {
-        string head, tail, relation;
-        pair<pair<int, int>, int> sample_false;
-
-        fin >> head >> relation >> tail;
+      string head, tail, relation;
+      while (fin >> head >> relation >> tail) {
+        pair<pair<int, int>, int> sample_false;      
 
         if (entity_name_to_id.find(head) == entity_name_to_id.end()) {
           entity_name_to_id.insert(make_pair(head, entity_name_to_id.size()));
