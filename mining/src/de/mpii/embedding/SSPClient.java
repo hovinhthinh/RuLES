@@ -7,22 +7,16 @@ import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-/**
- * Created by hovinhthinh on 11/13/17.
- */
+public class SSPClient extends EmbeddingClient {
+    public static final Logger LOGGER = Logger.getLogger(SSPClient.class.getName());
 
-// Support L1 norm only.
-public class TransEClient extends EmbeddingClient {
-    public static final Logger LOGGER = Logger.getLogger(TransEClient.class.getName());
-    private String norm;
-    private DoubleVector[] entitiesEmbedding, relationsEmbedding;
+    private DoubleVector[] entitiesEmbedding, relationsEmbedding, semantic;
 
-    public TransEClient(String workspace, String norm) {
-        LOGGER.info("Loading embedding TransE client from '" + workspace + "' with norm " + norm + ".");
-        this.norm = norm;
-        if (!norm.equals("L1")) {
-            throw new RuntimeException("Support L1 norm only.");
-        }
+    double balance;
+
+    public SSPClient(String workspace) {
+        LOGGER.info("Loading embedding SSP client from '" + workspace + ".");
+
         try {
             // Read nEntities, nRelations, eLength.
             Scanner metaIn = new Scanner(new File(workspace + "/meta.txt"));
@@ -38,8 +32,9 @@ public class TransEClient extends EmbeddingClient {
             }
             // Read embeddings.
             DataInputStream eIn = new DataInputStream(new FileInputStream(
-                    new File(workspace + "/transe")));
+                    new File(workspace + "/ssp")));
             eLength = (int) (eIn.readDouble() + 1e-6);
+            balance = eIn.readDouble();
             entitiesEmbedding = new DoubleVector[nEntities];
             for (int i = 0; i < nEntities; ++i) {
                 entitiesEmbedding[i] = new DoubleVector(eLength);
@@ -52,6 +47,13 @@ public class TransEClient extends EmbeddingClient {
                 relationsEmbedding[i] = new DoubleVector(eLength);
                 for (int j = 0; j < eLength; ++j) {
                     relationsEmbedding[i].value[j] = eIn.readDouble();
+                }
+            }
+            semantic = new DoubleVector[nEntities];
+            for (int i = 0; i < nEntities; ++i) {
+                semantic[i] = new DoubleVector(eLength);
+                for (int j = 0; j < eLength; ++j) {
+                    semantic[i].value[j] = eIn.readDouble();
                 }
             }
             eIn.close();
@@ -69,15 +71,31 @@ public class TransEClient extends EmbeddingClient {
 
     @Override
     public double getScore(int subject, int predicate, int object) {
-        double score = 0;
+        double[] sem = new double[eLength];
+        double[] err = new double[eLength];
+        double sum = 0;
         for (int i = 0; i < eLength; ++i) {
-            score += Math.abs(entitiesEmbedding[subject].value[i] + relationsEmbedding[predicate].value[i] -
-                    entitiesEmbedding[object].value[i]);
+            sem[i] = semantic[subject].value[i] + semantic[object].value[i];
+            sum += Math.abs(sem[i]);
+            err[i] = entitiesEmbedding[subject].value[i] + relationsEmbedding[predicate].value[i] -
+                    entitiesEmbedding[object].value[i];
         }
-        return -score;
+        sum = Math.max(sum, 1e-5);
+        double ste = 0;
+        for (int i = 0; i < eLength; ++i) {
+            sem[i] /= sum;
+            ste += sem[i] * err[i];
+        }
+        double first = 0, second = 0;
+        for (int i = 0; i < eLength; ++i) {
+            first += Math.abs(err[i] - ste * sem[i]);
+            second += Math.abs(err[i]);
+        }
+
+        return -balance * first - second;
     }
 
     public static void main(String[] args) {
-        new TransEClient("../data/imdb/", "L1");
+        new SSPClient("../data/fb15k/");
     }
 }

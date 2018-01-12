@@ -8,18 +8,14 @@ import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-public class HolEClient implements EmbeddingClient {
+public class HolEClient extends EmbeddingClient {
     public static final Logger LOGGER = Logger.getLogger(HolEClient.class.getName());
     // Automatically turn on CACHED_CORREL if nEntities <= this threshold.
     private static final int CACHED_CORREL_THRESHOLD = 15000;
 
     private boolean CACHED_CORREL = false;
 
-    private int nEntities, nRelations, eLength;
     private DoubleVector[] entitiesEmbedding, relationsEmbedding;
-    private FactEncodedSetPerPredicate[] trueFacts;
-    private ConcurrentHashMap<Long, Double>[] cachedRankQueries;
-
     double correl[][][];
 
     public HolEClient(String workspace) {
@@ -114,49 +110,7 @@ public class HolEClient implements EmbeddingClient {
         }
     }
 
-    @Override
-    public double getInvertedRank(int subject, int predicate, int object) {
-        long encoded = FactEncodedSetPerPredicate.encode(subject, object);
-        if (cachedRankQueries[predicate].containsKey(encoded)) {
-            return cachedRankQueries[predicate].get(encoded);
-        }
-        int rankH = 1;
-        int rankT = 1;
-        double score = getScore(subject, predicate, object);
-        for (int i = 0; i < nEntities; ++i) {
-            if (i == subject || i == object) {
-                continue;
-            }
-            if (!trueFacts[predicate].containFact(i, object) && getScore(i, predicate, object) > score + 1e-6) {
-                ++rankH;
-            }
-            if (!trueFacts[predicate].containFact(subject, i) && getScore(subject, predicate, i) > score + 1e-6) {
-                ++rankT;
-            }
-        }
-        double irank = 0.5 / rankH + 0.5 / rankT;
-        cachedRankQueries[predicate].put(encoded, irank);
-        return irank;
-    }
-
-    private static class FactEncodedSetPerPredicate {
-        private static final long BASE = 1000000000;
-        private HashSet<Long> set = new HashSet<>();
-
-        public static long encode(int subject, int object) {
-            return ((long) subject) * BASE + object;
-        }
-
-        public void addFact(int subject, int object) {
-            set.add(encode(subject, object));
-        }
-
-        public boolean containFact(int subject, int object) {
-            return set.contains(encode(subject, object));
-        }
-    }
-
     public static void main(String[] args) {
-        new HolEClient("../data/imdb/");
+        new HolEClient("../data/fb15k/");
     }
 }

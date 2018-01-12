@@ -13,7 +13,7 @@ class SemanticModel : public TransE {
   vector<vec> v_semantics;
 
  protected:
-  const double balance;
+  double balance;
 
  public:
   SemanticModel(const Dataset& dataset, const TaskType& task_type,
@@ -491,7 +491,7 @@ class SemanticModel_Joint : public SemanticModel {
     ofstream fout(filename, ios::binary);
     double dim = embedding_entity[0].n_rows;
     fout.write(reinterpret_cast<char*>(&dim),sizeof(dim)); 
-
+    fout.write(reinterpret_cast<char*>(&balance),sizeof(balance)); 
     stringstream ess, rss, vss;
     int n_entity = count_entity(), n_relation = count_relation();
 
