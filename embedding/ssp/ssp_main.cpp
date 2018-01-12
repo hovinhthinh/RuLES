@@ -9,7 +9,7 @@
 #include <sstream>
 
 // args: <workspace> <embedding_dimensions> <learning_rate> <margin>
-// <balance_factor>
+// <balance_factor> <joint_weight>
 int main(int argc, char* argv[]) {
   std::stringstream ss;
   for (auto i = 1; i < argc; ++i) {
@@ -17,13 +17,13 @@ int main(int argc, char* argv[]) {
   }
   string workspace;
   int dim;
-  double learning_rate, margin, balance;
-  ss >> workspace >> dim >> learning_rate >> margin >> balance;
+  double learning_rate, margin, balance, joint_weight;
+  ss >> workspace >> dim >> learning_rate >> margin >> balance >> joint_weight;
 
   Dataset FB15K(argv[1], argv[1], "/train.txt", "/valid.txt", "/test.txt",
                 true);
   string report_path = "/tmp/";
-  string semantic_tfile_FB15K = workspace + "/entity_description.txt";
+  string semantic_tfile_FB15K = workspace + "/e_desc.txt";
 
   srand(time(nullptr));
 
@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
 
   model = new SemanticModel_Joint(FB15K, LinkPredictionHeadTail, report_path,
                                   semantic_tfile_FB15K, dim, learning_rate,
-                                  margin, balance, 0);
+                                  margin, balance, joint_weight);
   model->run(10000);
   model->test();
 
