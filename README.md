@@ -1,12 +1,24 @@
 # Enhancing Rule mining with Embedding
 [![Build Status](https://travis-ci.org/hovinhthinh/kg-comp-embedding-rule.svg?branch=master)](https://travis-ci.org/hovinhthinh/kg-comp-embedding-rule)
 ### Prerequisites
-python, numpy, scipy, scikit-learn, jdk, ant
+- For mining system (using Java): jdk, ant
+- For embedding models:
+    - TransE, HolE models (using Python): python, numpy, scipy, scikit-learn
+    - SSP model (using C++): icc, boost, armadillo (recommend armadillo4)
 ### 0. Build the project
 ```
 $ cd mining/ && ant build && cd ../
 ```
 This will generate a jar file for the mining system at `./mining/build.jar`
+
+`Additional`: If we want to run SSP embedding model:
+```
+$ icc -std=c++11 -O3 -qopenmp -larmadillo -xHost embedding/ssp/ssp_main.cpp -o embedding/ssp_main
+```
+If there is any error, you might need to change the environment source of `icc` before compiling:
+```
+$ source /opt/intel/bin/compilervars.sh intel64 # (intel64 or ia32 depending on system architecture)
+```
 ### 1. Workspace
 We should prepare a folder containing a single data file  with name `ideal.data.txt` of the knowledge graph, in which each triple is represented in one line using the RDF form:
 ```
@@ -34,7 +46,7 @@ $ bash gen_data.sh <workspace>
 # Ex: $ bash gen_data.sh ./data/imdb/
 ```
 ### 3. Train the embedding model
-We support following embedding model
+We can choose run each of these models:
 #### 3.1. TransE with AdaGrad
 ```
 $ bash run_transe.sh --workspace <workspace> --margin <margin> --lr <starting_learning_rate> --ncomp
@@ -50,6 +62,13 @@ $ bash run_hole.sh --workspace <workspace> --margin <margin> --lr <starting_lear
 # Ex: $ bash run_hole.sh --workspace ./data/fb15k/ --margin 0.1 --lr 0.1 --ncomp 150
 ```
 The embedding model will run and the embedding data will be stored in file `hole` in the workspace folder.
+#### 3.3. SSP
+```
+$ ./embedding/ssp_main <workspace> <embedding_dimensions> <learning_rate> <margin> <balance_factor> <joint_weight>
+# Ex: $ ./embedding/ssp_main ./data/fb15k/ 100 0.001 1.8 0.2 0.1
+# This will run the SSP model on FB15K with Joint setting. A joint_weight = 0 indicates the Standard setting.
+```
+The embedding model will run and the embedding data will be stored in file `ssp` in the workspace folder.
 ### 4. Run the mining system
 ```
 $ java -jar mining/build.jar -w <workspace> -em <embedding_model>
