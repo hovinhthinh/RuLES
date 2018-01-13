@@ -104,8 +104,9 @@ usage: utility-name
  -nupo,--max_num_uniq_pred_occur <arg>   Maximum number of occurrence of each unique predicate (default: 2)
  -hc,--min_hc <arg>                      Minimum head coverage of mined rules (default: 0.02)
  -ec,--min_ec <arg>                      Minimum exception coverage of adding exception atom (default: 0.2)
- -em,--embedding_model <arg>             Embedding model ('transe'/'hole')
+ -em,--embedding_model <arg>             Embedding model ('transe'/'hole'/'ssp')
  -ew,--embedding_weight <arg>            Weight of embedding in score function (default: 0.8)
+ -ms,--min_score <arg>                   Report only rules having score at least this threshold (default: 0.1)
  -pca,--use_pca_conf                     Use pca confidence instead of standard confidence
  -dj,--disjunction                       Mine rule with disjunction in the head
  -nw,--num_workers <arg>                 Number of parallel workers (default: 8)
