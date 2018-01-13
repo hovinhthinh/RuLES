@@ -106,6 +106,9 @@ public class RuleStats {
                             mrr[pid] /= (bodySupport - ruleSupport[pid]);
                             scr[pid] += mrr[pid] * config.embeddingWeight;
                         }
+                        if (scr[pid] < config.minScore) {
+                            scr[pid] = -1;
+                        }
                     }
                 } else {
                     scr[pid] = -1;
@@ -117,11 +120,11 @@ public class RuleStats {
         if (withDisjunction) {
             disjunctionStats = new LinkedList<>();
             for (int pid1 = 0; pid1 < confidence.length; ++pid1) {
-                if (sourceScr[pid1] == -1) {
+                if (sourceScr[pid1] == -1 || scr[pid1] == -1) {
                     continue;
                 }
                 for (int pid2 = pid1 + 1; pid2 < confidence.length; ++pid2) {
-                    if (sourceScr[pid2] == -1) {
+                    if (sourceScr[pid2] == -1 || scr[pid2] == -1) {
                         continue;
                     }
                     HashSet<Integer> goodS = null;
@@ -185,7 +188,7 @@ public class RuleStats {
                     // Disable reversed rules.
                     continue;
                 }
-                if (config.usePCAConf || sourceScr[pid1] == -1) {
+                if (config.usePCAConf || sourceScr[pid1] == -1 || scr[pid1] == -1) {
                     continue;
                 }
                 for (int pid2 = pid1 + 1; pid2 < confidence.length; ++pid2) {

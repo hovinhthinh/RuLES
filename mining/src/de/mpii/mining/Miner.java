@@ -2,6 +2,7 @@ package de.mpii.mining;
 
 import de.mpii.embedding.EmbeddingClient;
 import de.mpii.embedding.HolEClient;
+import de.mpii.embedding.SSPClient;
 import de.mpii.embedding.TransEClient;
 import de.mpii.mining.atom.Atom;
 import de.mpii.mining.atom.BinaryAtom;
@@ -42,6 +43,8 @@ public class Miner implements Runnable {
             embeddingClient = new TransEClient(workspace, "L1");
         } else if (config.embeddingModel.equalsIgnoreCase("hole")) {
             embeddingClient = new HolEClient(workspace);
+        } else if (config.embeddingModel.equalsIgnoreCase("ssp")) {
+            embeddingClient = new SSPClient(workspace);
         } else {
             throw new RuntimeException("Invalid embedding model");
         }
