@@ -3,6 +3,8 @@ package de.mpii.embedding;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
@@ -13,6 +15,17 @@ public class SSPClient extends EmbeddingClient {
     private DoubleVector[] entitiesEmbedding, relationsEmbedding, semantic;
 
     double balance;
+
+    double readDouble(DataInputStream in) throws IOException {
+        byte[] b = new byte[8];
+        in.read(b, 0, 8);
+        for (int i = 0; i < 4; ++i) {
+            byte x = b[i];
+            b[i] = b[7 - i];
+            b[7 - i] = x;
+        }
+        return ByteBuffer.wrap(b).getDouble();
+    }
 
     public SSPClient(String workspace) {
         LOGGER.info("Loading embedding SSP client from '" + workspace + ".");
@@ -26,6 +39,7 @@ public class SSPClient extends EmbeddingClient {
             metaIn.close();
             trueFacts = new FactEncodedSetPerPredicate[nRelations];
             cachedRankQueries = new ConcurrentHashMap[nRelations];
+
             for (int i = 0; i < nRelations; ++i) {
                 trueFacts[i] = new FactEncodedSetPerPredicate();
                 cachedRankQueries[i] = new ConcurrentHashMap<>();
@@ -33,27 +47,27 @@ public class SSPClient extends EmbeddingClient {
             // Read embeddings.
             DataInputStream eIn = new DataInputStream(new FileInputStream(
                     new File(workspace + "/ssp")));
-            eLength = (int) (eIn.readDouble() + 1e-6);
-            balance = eIn.readDouble();
+            eLength = (int) (readDouble(eIn) + 1e-6);
+            balance = readDouble(eIn);
             entitiesEmbedding = new DoubleVector[nEntities];
             for (int i = 0; i < nEntities; ++i) {
                 entitiesEmbedding[i] = new DoubleVector(eLength);
                 for (int j = 0; j < eLength; ++j) {
-                    entitiesEmbedding[i].value[j] = eIn.readDouble();
+                    entitiesEmbedding[i].value[j] = readDouble(eIn);
                 }
             }
             relationsEmbedding = new DoubleVector[nRelations];
             for (int i = 0; i < nRelations; ++i) {
                 relationsEmbedding[i] = new DoubleVector(eLength);
                 for (int j = 0; j < eLength; ++j) {
-                    relationsEmbedding[i].value[j] = eIn.readDouble();
+                    relationsEmbedding[i].value[j] = readDouble(eIn);
                 }
             }
             semantic = new DoubleVector[nEntities];
             for (int i = 0; i < nEntities; ++i) {
                 semantic[i] = new DoubleVector(eLength);
                 for (int j = 0; j < eLength; ++j) {
-                    semantic[i].value[j] = eIn.readDouble();
+                    semantic[i].value[j] = readDouble(eIn);
                 }
             }
             eIn.close();
