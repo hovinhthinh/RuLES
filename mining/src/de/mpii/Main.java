@@ -102,12 +102,6 @@ public class Main {
         option.setRequired(false);
         options.addOption(option);
 
-        // minScore
-        option = new Option("ms", "min_score", true, "Report only rules having score at least this threshold " +
-                "(default: 0.1)");
-        option.setRequired(false);
-        options.addOption(option);
-
         // usePCAConf
         option = new Option("pca", "use_pca_conf", false, "Use pca confidence instead of standard confidence");
         option.setRequired(false);
@@ -186,10 +180,6 @@ public class Main {
         ov = cmd.getOptionValue("ew");
         if (ov != null) {
             config.embeddingWeight = Double.parseDouble(ov);
-        }
-        ov = cmd.getOptionValue("ms");
-        if (ov != null) {
-            config.minScore = Double.parseDouble(ov);
         }
         ov = cmd.getOptionValue("nw");
         if (ov != null) {

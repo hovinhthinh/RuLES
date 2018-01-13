@@ -106,7 +106,6 @@ usage: utility-name
  -ec,--min_ec <arg>                      Minimum exception coverage of adding exception atom (default: 0.2)
  -em,--embedding_model <arg>             Embedding model ('transe'/'hole'/'ssp')
  -ew,--embedding_weight <arg>            Weight of embedding in score function (default: 0.8)
- -ms,--min_score <arg>                   Report only rules having score at least this threshold (default: 0.1)
  -pca,--use_pca_conf                     Use pca confidence instead of standard confidence
  -dj,--disjunction                       Mine rule with disjunction in the head
  -nw,--num_workers <arg>                 Number of parallel workers (default: 8)

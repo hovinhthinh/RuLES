@@ -111,8 +111,8 @@ public class RulePruner {
         if (r.stats == null) return false;
         boolean hasGoodHead = false;
         for (int i = 0; i < r.nRelations; ++i) {
-            // TODO: DEPRECATED: minHeadCoverage & minScore filter migrated to RuleStats.
-            if (r.stats.headCoverage[i] >= config.minHeadCoverage && r.stats.scr[i] >= config.minScore &&
+            // TODO: DEPRECATED: minHeadCoverage filter migrated to RuleStats.
+            if (r.stats.headCoverage[i] >= config.minHeadCoverage &&
                     (r.stats.scr[i] > r.sourceScr[i] + 1e-3) && r.sourceScr[i] != -1 &&
                     goodExceptionCoverage(r, i, config)) {
                 hasGoodHead = true;

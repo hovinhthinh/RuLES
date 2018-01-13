@@ -106,9 +106,6 @@ public class RuleStats {
                             mrr[pid] /= (bodySupport - ruleSupport[pid]);
                             scr[pid] += mrr[pid] * config.embeddingWeight;
                         }
-                        if (scr[pid] < config.minScore) {
-                            scr[pid] = -1;
-                        }
                     }
                 } else {
                     scr[pid] = -1;

@@ -21,7 +21,6 @@ public class MinerConfig {
     public int maxNumUnaryExceptionAtoms = 1;
     public int maxNumBinaryExceptionAtoms = 1;
     public int maxUniquePredicateOccurrence = 2;
-    public double minScore = 0.1;
 
     // Content prune options.
     public double minHeadCoverage = 0.02;
@@ -53,7 +52,6 @@ public class MinerConfig {
         System.out.println("minExceptionCoverage=" + minExceptionCoverage);
         System.out.println("enqueueLimit=" + enqueueLimit);
         System.out.println("embeddingWeight=" + embeddingWeight);
-        System.out.println("minScore=" + minScore);
         System.out.println("usePCAConf=" + usePCAConf);
         System.out.println("numWorkers=" + numWorkers);
         System.out.println("disjunction=" + disjunction);
