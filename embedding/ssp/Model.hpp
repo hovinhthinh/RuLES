@@ -397,8 +397,8 @@ class Model {
 
     std::cout << endl;
     for (auto i = 1; i <= 4; ++i) {
-      std::cout << i << ':' << arr_mean[i] / arr_total[i] << endl;
-      logging.record() << i << ':' << arr_mean[i] / arr_total[i];
+      std::cout << i << ':' << arr_mean[i] / arr_total[i] / 2 << endl;
+      logging.record() << i << ':' << arr_mean[i] / arr_total[i] / 2;
     }
     logging.record();
 

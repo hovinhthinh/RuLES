@@ -120,7 +120,8 @@ public class Infer {
             BinaryAtom atom = (BinaryAtom) a;
             if (variableValues[atom.sid] == -1 && variableValues[atom.oid] == -1) {
                 for (SOInstance so : knowledgeGraph.pidSOInstances[atom.pid]) {
-                    if (duplicatedVar(variableValues, so.subject) || duplicatedVar(variableValues, so.object)) {
+                    if (duplicatedVar(variableValues, so.subject) || duplicatedVar(variableValues, so.object) || so
+                            .subject == so.object) {
                         continue;
                     }
                     variableValues[atom.sid] = so.subject;
