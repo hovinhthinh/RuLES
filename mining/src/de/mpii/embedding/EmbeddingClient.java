@@ -12,6 +12,7 @@ public abstract class EmbeddingClient {
     protected int nEntities, nRelations, eLength;
     protected FactEncodedSetPerPredicate[] trueFacts;
     protected ConcurrentHashMap<Long, Double>[] cachedRankQueries;
+    protected static final int CACHE_LIMIT_PER_PREDICATE = 100000;
 
     // Higher score indicates higher plausibility.
     public abstract double getScore(int subject, int predicate, int object);
@@ -36,7 +37,9 @@ public abstract class EmbeddingClient {
             }
         }
         double irank = 0.5 / rankH + 0.5 / rankT;
-        cachedRankQueries[predicate].put(encoded, irank);
+        if (cachedRankQueries[predicate].size() < CACHE_LIMIT_PER_PREDICATE) {
+            cachedRankQueries[predicate].put(encoded, irank);
+        }
         return irank;
     }
 

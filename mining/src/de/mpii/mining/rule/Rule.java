@@ -418,7 +418,7 @@ public class Rule {
         } else {
             BinaryAtom atom = (BinaryAtom) a;
             StringBuilder sb = new StringBuilder(atom.negated ? "not " : "");
-            if (atom.pid < 0) {
+            if (atom.pid < 0) { // This is never executed. atom.pid is always >= 0.
                 sb.append(relationsString[-1-atom.pid]).append("(V").append(atom.oid).append
                         (", V").append
                         (atom.sid).append

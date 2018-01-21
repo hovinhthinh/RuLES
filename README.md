@@ -93,6 +93,8 @@ Missing required options: w, em
 usage: utility-name
  -w,--workspace <arg>                    Path to workspace
  -o,--output <arg>                       Output file path (default: '<workspace>/rules.txt')
+ -ms,--min_support <arg>                 Min support of rule (default: 2)
+ -mc,--min_conf <arg>                    Min confidence of rule (not counting mrr) (default: 0.1)
  -nv,--max_num_var <arg>                 Maximum number of variables (default: 4)
  -vd,--max_var_deg <arg>                 Maximum variable degree (number of predicates having the same variable) (default: 3)
  -na,--max_num_atom <arg>                Maximum number of atoms (default: 4)

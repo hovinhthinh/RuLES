@@ -90,8 +90,11 @@ public class RuleStats {
                 scr[pid] = 0;
                 if (headCoverage[pid] >= config.minHeadCoverage) {
                     // Call embedding service.
-                    if (bodySupport == ruleSupport[pid]) {
+                    if (bodySupport == ruleSupport[pid] || confidence[pid] < config.minConf || ruleSupport[pid] <
+                            config.minSupport) {
                         // Applying the rule doesn't extend the kg.
+                        // Rule is not confidence (double check to reduce complexity when calling embedding model)
+                        // Rule does not have enough support.
                         scr[pid] = -1;
                     } else {
                         scr[pid] = confidence[pid] * (1 - config.embeddingWeight);

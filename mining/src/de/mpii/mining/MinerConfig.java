@@ -21,6 +21,8 @@ public class MinerConfig {
     public int maxNumUnaryExceptionAtoms = 1;
     public int maxNumBinaryExceptionAtoms = 1;
     public int maxUniquePredicateOccurrence = 2;
+    public double minConf = 0.1;
+    public int minSupport = 2;
 
     // Content prune options.
     public double minHeadCoverage = 0.02;
@@ -39,6 +41,8 @@ public class MinerConfig {
     public void printConfig() {
         System.out.println("---------------MinerConfig---------------");
         System.out.println("embeddingModel=" + embeddingModel);
+        System.out.println("minConfidence=" + minConf);
+        System.out.println("minSupport=" + minSupport);
         System.out.println("maxNumVariables=" + maxNumVariables);
         System.out.println("maxVariableDegree=" + maxVariableDegree);
         System.out.println("maxNumAtoms=" + maxNumAtoms);
@@ -50,7 +54,6 @@ public class MinerConfig {
         System.out.println("maxUniquePredicateOccurrence=" + maxUniquePredicateOccurrence);
         System.out.println("minHeadCoverage=" + minHeadCoverage);
         System.out.println("minExceptionCoverage=" + minExceptionCoverage);
-        System.out.println("enqueueLimit=" + enqueueLimit);
         System.out.println("embeddingWeight=" + embeddingWeight);
         System.out.println("usePCAConf=" + usePCAConf);
         System.out.println("numWorkers=" + numWorkers);

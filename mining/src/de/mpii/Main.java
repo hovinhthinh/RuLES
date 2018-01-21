@@ -1,5 +1,6 @@
 package de.mpii;
 
+import de.mpii.mining.ConstantMiner;
 import de.mpii.mining.Miner;
 import de.mpii.mining.MinerConfig;
 import org.apache.commons.cli.*;
@@ -34,6 +35,16 @@ public class Main {
         // embeddingModel
         option = new Option("em", "embedding_model", true, "Embedding model ('transe'/'hole')");
         option.setRequired(true);
+        options.addOption(option);
+
+        // minConf
+        option = new Option("mc", "min_conf", true, "Min confidence of rule (not counting mrr) (default: 0.1)");
+        option.setRequired(false);
+        options.addOption(option);
+
+        // minSupport
+        option = new Option("ms", "min_support", true, "Min support of rule (default: 2)");
+        option.setRequired(false);
         options.addOption(option);
 
         // maxNumVariables
@@ -116,7 +127,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-//        args = new String[]{"-w", "../data/imdb"};
+//        args = "-w ../data/imdb -em transe -dj -o tmp -na 3 -ew 0".split("\\s++");
         MinerConfig config = new MinerConfig();
 
         // Get config.
@@ -191,15 +202,33 @@ public class Main {
         if (cmd.hasOption("dj")) {
             config.disjunction = true;
         }
-
+        ov = cmd.getOptionValue("mc");
+        if (ov != null) {
+            config.minConf = Double.parseDouble(ov);
+        }
+        ov = cmd.getOptionValue("ms");
+        if (ov != null) {
+            config.minSupport = Integer.parseInt(ov);
+        }
         String output = cmd.getOptionValue("w") + "/rules.txt";
         if (cmd.hasOption("o")) {
             output = cmd.getOptionValue("o");
         }
         // Process.
         config.printConfig();
-        Miner miner = new Miner(cmd.getOptionValue("w"), config, new PrintWriter(new File(output)));
-        miner.mine();
+        if (config.disjunction) {
+            if (config.maxNumAtoms > 3) {
+                throw new RuntimeException("Not support num atoms > 3 for disjunction");
+            }
+            if (config.usePCAConf) {
+                throw new RuntimeException("Not support PCA confidence for disjunction");
+            }
+            ConstantMiner miner = new ConstantMiner(cmd.getOptionValue("w"), config, new PrintWriter(new File(output)));
+            miner.mine();
+        } else {
+            Miner miner = new Miner(cmd.getOptionValue("w"), config, new PrintWriter(new File(output)));
+            miner.mine();
+        }
 
         ArrayList<String[]> rules = new ArrayList<>();
         BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(new File(output))));
