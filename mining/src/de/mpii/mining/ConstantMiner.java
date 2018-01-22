@@ -534,7 +534,8 @@ public class ConstantMiner implements Runnable {
                 }
                 variableValues[a.sid] = -1;
             } else {
-                boolean hasFact = atom.reversed ? knowledgeGraph.trueFacts.containFact(variableValues[atom.sid], atom.pid, atom.value)
+                boolean hasFact = !atom.reversed ? knowledgeGraph.trueFacts.containFact(variableValues[atom.sid],
+                        atom.pid, atom.value)
                         : knowledgeGraph.trueFacts.containFact(atom.value, atom.pid, variableValues[atom.sid]);
                 if (!hasFact) {
                     return;
@@ -636,24 +637,27 @@ public class ConstantMiner implements Runnable {
                     }
                 }
                 // TODO: Uncomment for better rules (with binary atoms).
-//                for (int i = 0; i < knowledgeGraph.nRelations; ++i) {
-//                    ConstantRule newR = r.addDanglingAtom(0, i, true);
-//                    ruleQueue.enqueue(newR);
-//                    newR = r.addDanglingAtom(0, i, false);
-//                    ruleQueue.enqueue(newR);
-//                }
-            } else if (r.atoms.size() == 2 && r.atoms.get(r.atoms.size() - 1) instanceof BinaryAtom) {
-//                for (int v : r.extensionVars) {
-//                    for (KnowledgeGraph.OutgoingEdge oe : knowledgeGraph.outEdges[v]) {
-//                        ConstantRule newR = null;
-//                        if (oe.pid >= 0) {
-//                            newR = r.addInstanceAtom(1, oe.pid, oe.oid, false);
-//                        } else {
-//                            newR = r.addInstanceAtom(1, -oe.pid - 1, oe.oid, true);
-//                        }
-//                        ruleQueue.enqueue(newR);
-//                    }
-//                }
+                if (config.maxNumAtoms > 3) {
+                    for (int i = 0; i < knowledgeGraph.nRelations; ++i) {
+                        ConstantRule newR = r.addDanglingAtom(0, i, true);
+                        ruleQueue.enqueue(newR);
+                        newR = r.addDanglingAtom(0, i, false);
+                        ruleQueue.enqueue(newR);
+                    }
+                }
+            } else if (config.maxNumAtoms > 3 && r.atoms.size() == 2 && r.atoms.get(r.atoms.size() - 1) instanceof
+                    BinaryAtom) {
+                for (int v : r.extensionVars) {
+                    for (KnowledgeGraph.OutgoingEdge oe : knowledgeGraph.outEdges[v]) {
+                        ConstantRule newR = null;
+                        if (oe.pid >= 0) {
+                            newR = r.addInstanceAtom(1, oe.pid, oe.oid, false);
+                        } else {
+                            newR = r.addInstanceAtom(1, -oe.pid - 1, oe.oid, true);
+                        }
+                        ruleQueue.enqueue(newR);
+                    }
+                }
             }
         }
         LOGGER.info("A worker is shutting down.");

@@ -127,7 +127,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-//        args = "-w ../data/imdb -em transe -dj -o tmp -na 3 -ew 0".split("\\s++");
+//        args = "-w ../data/imdb -em transe -dj -o tmp -na 3 -ew 0 -ms 4".split("\\s++");
         MinerConfig config = new MinerConfig();
 
         // Get config.
@@ -217,8 +217,8 @@ public class Main {
         // Process.
         config.printConfig();
         if (config.disjunction) {
-            if (config.maxNumAtoms > 3) {
-                throw new RuntimeException("Not support num atoms > 3 for disjunction");
+            if (config.maxNumAtoms > 4) {
+                throw new RuntimeException("Not support num atoms > 4 for disjunction");
             }
             if (config.usePCAConf) {
                 throw new RuntimeException("Not support PCA confidence for disjunction");
