@@ -228,7 +228,7 @@ public class ComputeStats {
 
     // args: <workspace> <client> <file> <out>
     public static void main(String[] args) throws Exception {
-        args = "../data/imdb transe ../data/imdb/amie.txt.conf tmp".split("\\s++");
+//        args = "../data/imdb transe ../data/imdb/amie.txt.conf tmp".split("\\s++");
 
         EmbeddingClient embeddingClient;
         if (args[1].equalsIgnoreCase("transe")) {
