@@ -9,6 +9,7 @@ import de.mpii.mining.atom.BinaryAtom;
 import de.mpii.mining.atom.UnaryAtom;
 import de.mpii.mining.graph.KnowledgeGraph;
 import de.mpii.mining.rule.Rule;
+import de.mpii.mining.rule.RuleStats;
 import de.mpii.mining.rule.SOInstance;
 import de.mpii.util.Pair;
 
@@ -150,6 +151,9 @@ public class ComputeStats {
             return;
         }
         Atom a = rule.atoms.get(position);
+        if (headInstances.size() >= RuleStats.HEAD_INSTANCE_BOUND) {
+            return;
+        }
         if (a instanceof UnaryAtom) {
             if (variableValues[a.sid] == -1) {
                 // This case only happens for positive atom.
@@ -179,6 +183,10 @@ public class ComputeStats {
                     variableValues[atom.sid] = so.subject;
                     variableValues[atom.oid] = so.object;
                     recur(rule, position + 1, variableValues, headInstances);
+                    if (headInstances.size() >= RuleStats.HEAD_INSTANCE_BOUND) {
+                        variableValues[atom.sid] = variableValues[atom.oid] = -1;
+                        return;
+                    }
                 }
                 variableValues[atom.sid] = variableValues[atom.oid] = -1;
             } else if (variableValues[atom.sid] == -1 || variableValues[atom.oid] == -1) {
@@ -192,6 +200,10 @@ public class ComputeStats {
                         }
                         variableValues[atom.oid] = e.oid;
                         recur(rule, position + 1, variableValues, headInstances);
+                        if (headInstances.size() >= RuleStats.HEAD_INSTANCE_BOUND) {
+                            variableValues[atom.oid] = -1;
+                            return;
+                        }
                     }
                     variableValues[atom.oid] = -1;
                 } else {
@@ -204,6 +216,10 @@ public class ComputeStats {
                         }
                         variableValues[atom.sid] = e.oid;
                         recur(rule, position + 1, variableValues, headInstances);
+                        if (headInstances.size() >= RuleStats.HEAD_INSTANCE_BOUND) {
+                            variableValues[atom.sid] = -1;
+                            return;
+                        }
                     }
                     variableValues[atom.sid] = -1;
                 }
