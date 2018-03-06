@@ -11,7 +11,7 @@ public class ProcessDesc {
         BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream
                 ("../data/fb15k-new/entities_description.txt")));
         PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream
-                ("../data/fb15k-new/entities_description.fil.txt")));
+                ("../data/fb15k-new/tmp")));
         String line;
         HashSet<String> goodId = new HashSet<>();
         while ((line = in.readLine()) != null) {
@@ -41,7 +41,8 @@ public class ProcessDesc {
 
         in = new BufferedReader(new InputStreamReader(new FileInputStream("../data/fb15k-new/ideal.data.txt")));
         out = new PrintWriter(new OutputStreamWriter(new FileOutputStream
-                ("../data/fb15k-new/ideal.data.fil.txt")));
+                ("../data/fb15k-new/ideal.data.new.txt")));
+        HashSet<String> has = new HashSet<>();
         while ((line = in.readLine()) != null) {
             line = line.trim();
             if (line.isEmpty()) {
@@ -49,6 +50,24 @@ public class ProcessDesc {
             }
             String arr[] = line.split("\t");
             if (goodId.contains(arr[0]) && goodId.contains(arr[2])) {
+                out.println(line);
+                has.add(arr[0]);
+                has.add(arr[2]);
+            }
+        }
+        in.close();
+        out.close();
+
+        in = new BufferedReader(new InputStreamReader(new FileInputStream("../data/fb15k-new/tmp")));
+        out = new PrintWriter(new OutputStreamWriter(new FileOutputStream
+                ("../data/fb15k-new/entities_description.new.txt")));
+        while ((line = in.readLine()) != null) {
+            line = line.trim();
+            if (line.isEmpty()) {
+                continue;
+            }
+            String arr[] = line.split("\t");
+            if (has.contains(arr[0])) {
                 out.println(line);
             }
         }
