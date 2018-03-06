@@ -189,6 +189,7 @@ public class Infer {
         KnowledgeGraph.FactEncodedSet mined = new KnowledgeGraph.FactEncodedSet();
         int unknownNum = 0;
         int total = 0;
+        double averageQuality = 0;
         while ((line = in.readLine()) != null) {
             ++ruleCount;
             if (line.isEmpty() || ruleCount > top) {
@@ -200,22 +201,33 @@ public class Infer {
             HashSet<SOInstance> instances = matchRule(r);
             System.out.println("body_support: " + instances.size());
             int pid = r.atoms.get(0).pid;
+            int localNumTrue = 0;
+            int localPredict = 0;
             for (SOInstance so : instances) {
-                if (!mined.containFact(so.subject, pid, so.object) && !knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {
-                    mined.addFact(so.subject, pid, so.object);
-                    ++total;
+                if (!knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {
+                    ++localPredict;
                     boolean unknown = !knowledgeGraph.idealFacts.containFact(so.subject, pid, so.object);
-                    if (unknown) {
-                        ++unknownNum;
+                    if (!unknown) {
+                        ++localNumTrue;
                     }
-                    out.printf("%s\t%s\t%s\t%s\n", knowledgeGraph.entitiesString[so.subject], knowledgeGraph
-                            .relationsString[pid], knowledgeGraph.entitiesString[so.object], (unknown == false) ?
-                            "TRUE" : "null");
+                    if (!mined.containFact(so.subject, pid, so.object)) {
+                        mined.addFact(so.subject, pid, so.object);
+                        ++total;
+                        if (unknown) {
+                            ++unknownNum;
+                        }
+                        out.printf("%s\t%s\t%s\t%s\n", knowledgeGraph.entitiesString[so.subject], knowledgeGraph
+                                .relationsString[pid], knowledgeGraph.entitiesString[so.object], (unknown == false) ?
+                                "TRUE" : "null");
+                    }
                 }
             }
+            averageQuality += ((double)localNumTrue) / localPredict;
+            LOGGER.info(String.format("quality = %.3f", ((double)localNumTrue) / localPredict));
         }
         in.close();
         out.close();
-        LOGGER.info(String.format("#predictions = %d, unknown_rate = %.3f", total, (double) unknownNum / total));
+        LOGGER.info(String.format("#predictions = %d, known_rate = %.3f", total, 1-((double) unknownNum / total)));
+        LOGGER.info(String.format("#average_quality = %.3f", averageQuality / top));
     }
 }
