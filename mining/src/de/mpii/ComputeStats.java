@@ -80,7 +80,8 @@ public class ComputeStats {
                 double mrr05 = conf * 0.5 + mrr * 0.5;
                 double mrr08 = conf * 0.2 + mrr * 0.8;
                 synchronized (out) {
-                    out.printf("%s\t%d\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\n", sup, conf, pcaconf, mrr, mrr02, mrr05,
+                    out.printf("%s\t%d\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\n", front.second, sup, conf, pcaconf, mrr,
+                            mrr02, mrr05,
                             mrr08);
                 }
             }
