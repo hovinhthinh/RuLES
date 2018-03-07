@@ -30,7 +30,7 @@ public class ProcessDesc {
                 d.setCharAt(i, ' ');
             }
             String newD = d.toString().replaceAll("\\s++", " ").trim();
-            if (newD.split(" ").length < 3) {
+            if (newD.split(" ").length < 1) {
                 continue;
             }
             out.println(e + "\t" + newD);
