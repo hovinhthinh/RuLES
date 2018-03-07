@@ -52,19 +52,36 @@ public class ComputeStats {
                 int pid = r.atoms.get(0).pid;
                 int totalUnknown = 0;
                 double mrr = 0;
+                int sup = 0;
+                int pcaBodySup = 0;
+                HashSet<Integer> goodS = new HashSet<>();
                 for (SOInstance so : instances) {
                     if (!knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {
                         totalUnknown++;
                         mrr += client.getInvertedRank(so.subject, pid, so.object);
+                    } else {
+                        ++sup;
+                        goodS.add(so.subject);
                     }
                 }
-                if (totalUnknown == 0) {
+                for (SOInstance so : instances) {
+                    if (goodS.contains(so.subject)) {
+                        ++pcaBodySup;
+                    }
+                }
+                if (totalUnknown == 0 || instances.size() == 0) {
                     continue;
                 }
                 mrr /= totalUnknown;
+                double conf = ((double) sup) / instances.size();
+                double pcaconf = ((double) sup) / instances.size();
+
+                double mrr02 = conf * 0.8 + mrr * 0.2;
+                double mrr05 = conf * 0.5 + mrr * 0.5;
+                double mrr08 = conf * 0.2 + mrr * 0.8;
                 synchronized (out) {
-                    out.printf("%s%.9f\n", front.second, mrr);
-                    System.out.printf("%s%.9f\n", front.second, mrr);
+                    out.printf("%s\t%d\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\n", sup, conf, pcaconf, mrr, mrr02, mrr05,
+                            mrr08);
                 }
             }
         }
@@ -272,13 +289,9 @@ public class ComputeStats {
             }
             String arr[] = line.split("\t");
             String rule = arr[0];
-            String keep = "";
-            for (int i = 0; i < 4; ++i) {
-                keep += arr[i] + "\t";
-            }
             LOGGER.info("Loading rule: " + rule);
             Rule r = parseRule(knowledgeGraph, rule);
-            queue.add(new Pair<>(r, keep));
+            queue.add(new Pair<>(r, rule));
         }
         in.close();
 
