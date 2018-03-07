@@ -74,7 +74,7 @@ public class ComputeStats {
                 }
                 mrr /= totalUnknown;
                 double conf = ((double) sup) / instances.size();
-                double pcaconf = ((double) sup) / instances.size();
+                double pcaconf = pcaBodySup == 0 ? 0 : ((double) sup) / pcaBodySup;
 
                 double mrr02 = conf * 0.8 + mrr * 0.2;
                 double mrr05 = conf * 0.5 + mrr * 0.5;
