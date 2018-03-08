@@ -244,7 +244,7 @@ public class Infer {
         for (int i = 0; i < spearman.size(); ++i) {
             spearCo += (i + 1 - spearman.get(i).second) * (i + 1 - spearman.get(i).second);
         }
-        spearCo = 6 * spearCo / top / (top * top - 1);
+        spearCo = 1 - 6 * spearCo / top / (top * top - 1);
         in.close();
         out.close();
         LOGGER.info(String.format("#predictions = %d, known_rate = %.3f", total, 1-((double) unknownNum / total)));
