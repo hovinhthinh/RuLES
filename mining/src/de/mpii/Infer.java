@@ -6,11 +6,10 @@ import de.mpii.mining.atom.UnaryAtom;
 import de.mpii.mining.graph.KnowledgeGraph;
 import de.mpii.mining.rule.Rule;
 import de.mpii.mining.rule.SOInstance;
+import de.mpii.util.Pair;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -177,7 +176,7 @@ public class Infer {
     // args: <workspace> <file> <top> <new_facts>
     // Process first <top> rules of the <file> (top by lines, not by scr)
     public static void main(String[] args) throws Exception {
-//        args = new String[]{"../data/imdb/", "../data/imdb/rules.transe.txt.sorted", "325", "new_facts.txt"};
+//        args = new String[]{"../data/imdb/", "../data/imdb/exp1/xyz.transe.conf", "3", "tmp", "<directedBy>"};
         int top = Integer.parseInt(args[2]);
         knowledgeGraph = new KnowledgeGraph(args[0]);
 
@@ -185,24 +184,33 @@ public class Infer {
         PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(args[3]))));
         String line;
         int ruleCount = 0;
-
+        String predicate = null;
+        if (args.length > 4) {
+            predicate = args[4];
+        }
         KnowledgeGraph.FactEncodedSet mined = new KnowledgeGraph.FactEncodedSet();
         int unknownNum = 0;
         int total = 0;
         double averageQuality = 0;
+        ArrayList<Pair<Double, Integer>> spearman = new ArrayList<>();
         while ((line = in.readLine()) != null) {
-            ++ruleCount;
-            if (line.isEmpty() || ruleCount > top) {
+            if (line.isEmpty() || ruleCount >= top) {
                 break;
             }
             String rule = line.split("\t")[0];
-            LOGGER.info("Inferring rule: " + rule);
             Rule r = parseRule(knowledgeGraph, rule);
+            if (predicate != null && !knowledgeGraph.relationsString[r.atoms.get(0).pid].equals(predicate)) {
+                continue;
+            }
+            ++ruleCount;
+            LOGGER.info("Inferring rule: " + rule);
             HashSet<SOInstance> instances = matchRule(r);
             System.out.println("body_support: " + instances.size());
+            System.out.println(r.getString(knowledgeGraph.relationsString, knowledgeGraph.typesString));
             int pid = r.atoms.get(0).pid;
             int localNumTrue = 0;
             int localPredict = 0;
+
             for (SOInstance so : instances) {
                 if (!knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {
                     ++localPredict;
@@ -224,10 +232,26 @@ public class Infer {
             }
             averageQuality += ((double)localNumTrue) / localPredict;
             LOGGER.info(String.format("quality = %.3f", ((double)localNumTrue) / localPredict));
+            spearman.add(new Pair<>(((double)localNumTrue) / localPredict, 1 + top - ruleCount));
         }
+        Collections.sort(spearman, new Comparator<Pair<Double, Integer>>() {
+            @Override
+            public int compare(Pair<Double, Integer> o1, Pair<Double, Integer> o2) {
+                return Double.compare(o1.first, o2.first);
+            }
+        });
+        double spearCo = 0;
+        for (int i = 0; i < spearman.size(); ++i) {
+            spearCo += (i + 1 - spearman.get(i).second) * (i + 1 - spearman.get(i).second);
+        }
+        spearCo = 6 * spearCo / top / (top * top - 1);
         in.close();
         out.close();
         LOGGER.info(String.format("#predictions = %d, known_rate = %.3f", total, 1-((double) unknownNum / total)));
         LOGGER.info(String.format("#average_quality = %.3f", averageQuality / top));
+        LOGGER.info(String.format("Spearman = %.3f", spearCo));
+        if (ruleCount != top) {
+            LOGGER.warning("Not enough number of requested rules");
+        }
     }
 }
