@@ -1,5 +1,6 @@
-package de.mpii;
+package de.mpii.util;
 
+import de.mpii.Infer;
 import de.mpii.embedding.EmbeddingClient;
 import de.mpii.embedding.HolEClient;
 import de.mpii.embedding.SSPClient;

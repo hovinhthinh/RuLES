@@ -1,4 +1,4 @@
-package de.mpii;
+package de.mpii.util;
 
 import java.io.*;
 import java.util.Arrays;
