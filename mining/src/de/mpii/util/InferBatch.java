@@ -1,94 +1,21 @@
 package de.mpii.util;
 
-import de.mpii.embedding.EmbeddingClient;
-import de.mpii.embedding.HolEClient;
-import de.mpii.embedding.SSPClient;
-import de.mpii.embedding.TransEClient;
 import de.mpii.mining.atom.Atom;
 import de.mpii.mining.atom.BinaryAtom;
 import de.mpii.mining.atom.UnaryAtom;
 import de.mpii.mining.graph.KnowledgeGraph;
 import de.mpii.mining.rule.Rule;
-import de.mpii.mining.rule.RuleStats;
 import de.mpii.mining.rule.SOInstance;
-import de.mpii.util.Pair;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.logging.Logger;
 
 /**
  * Created by hovinhthinh on 11/27/17.
  */
-
-// Get input from AMIE for simplicity.
-public class ComputeStats {
-    public static class Runner implements Runnable {
-        EmbeddingClient client;
-        BlockingQueue<Pair<Rule, String>> queue;
-        PrintWriter out;
-
-        public Runner(EmbeddingClient client, BlockingQueue<Pair<Rule, String>> queue, PrintWriter out) {
-            this.client = client;
-            this.queue = queue;
-            this.out = out;
-        }
-
-        @Override
-        public void run() {
-            for (; ; ) {
-                Pair<Rule, String> front = null;
-                try {
-                    front = queue.poll(5, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                if (front == null) {
-                    return;
-                }
-                Rule r = front.first;
-                HashSet<SOInstance> instances = matchRule(r);
-                int pid = r.atoms.get(0).pid;
-                int totalUnknown = 0;
-                double mrr = 0;
-                int sup = 0;
-                int pcaBodySup = 0;
-                HashSet<Integer> goodS = new HashSet<>();
-                for (SOInstance so : instances) {
-                    if (!knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {
-                        totalUnknown++;
-                        mrr += client.getInvertedRank(so.subject, pid, so.object);
-                    } else {
-                        ++sup;
-                        goodS.add(so.subject);
-                    }
-                }
-                for (SOInstance so : instances) {
-                    if (goodS.contains(so.subject)) {
-                        ++pcaBodySup;
-                    }
-                }
-                if (totalUnknown == 0 || instances.size() == 0) {
-                    continue;
-                }
-                mrr /= totalUnknown;
-                double conf = ((double) sup) / instances.size();
-                double pcaconf = pcaBodySup == 0 ? 0 : ((double) sup) / pcaBodySup;
-
-                double mrr02 = conf * 0.8 + mrr * 0.2;
-                double mrr05 = conf * 0.5 + mrr * 0.5;
-                double mrr08 = conf * 0.2 + mrr * 0.8;
-                synchronized (out) {
-                    out.printf("%s\t%d\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\n", front.second, sup, conf, pcaconf, mrr,
-                            mrr02, mrr05,
-                            mrr08);
-                }
-            }
-        }
-    }
-
-    public static final Logger LOGGER = Logger.getLogger(ComputeStats.class.getName());
+public class InferBatch {
+    public static final Logger LOGGER = Logger.getLogger(InferBatch.class.getName());
 
     public static KnowledgeGraph knowledgeGraph;
 
@@ -169,9 +96,6 @@ public class ComputeStats {
             return;
         }
         Atom a = rule.atoms.get(position);
-        if (headInstances.size() >= RuleStats.HEAD_INSTANCE_BOUND) {
-            return;
-        }
         if (a instanceof UnaryAtom) {
             if (variableValues[a.sid] == -1) {
                 // This case only happens for positive atom.
@@ -201,10 +125,6 @@ public class ComputeStats {
                     variableValues[atom.sid] = so.subject;
                     variableValues[atom.oid] = so.object;
                     recur(rule, position + 1, variableValues, headInstances);
-                    if (headInstances.size() >= RuleStats.HEAD_INSTANCE_BOUND) {
-                        variableValues[atom.sid] = variableValues[atom.oid] = -1;
-                        return;
-                    }
                 }
                 variableValues[atom.sid] = variableValues[atom.oid] = -1;
             } else if (variableValues[atom.sid] == -1 || variableValues[atom.oid] == -1) {
@@ -218,10 +138,6 @@ public class ComputeStats {
                         }
                         variableValues[atom.oid] = e.oid;
                         recur(rule, position + 1, variableValues, headInstances);
-                        if (headInstances.size() >= RuleStats.HEAD_INSTANCE_BOUND) {
-                            variableValues[atom.oid] = -1;
-                            return;
-                        }
                     }
                     variableValues[atom.oid] = -1;
                 } else {
@@ -234,10 +150,6 @@ public class ComputeStats {
                         }
                         variableValues[atom.sid] = e.oid;
                         recur(rule, position + 1, variableValues, headInstances);
-                        if (headInstances.size() >= RuleStats.HEAD_INSTANCE_BOUND) {
-                            variableValues[atom.sid] = -1;
-                            return;
-                        }
                     }
                     variableValues[atom.sid] = -1;
                 }
@@ -260,56 +172,114 @@ public class ComputeStats {
         return headInstances;
     }
 
-    // args: <workspace> <client> <file> <out>
-    public static void main(String[] args) throws Exception {
-//        args = "../data/imdb transe ../data/imdb/amie.txt.conf tmp".split("\\s++");
 
-        EmbeddingClient embeddingClient;
-        if (args[1].equalsIgnoreCase("transe")) {
-            embeddingClient = new TransEClient(args[0], "L1");
-        } else if (args[1].equalsIgnoreCase("hole")) {
-            embeddingClient = new HolEClient(args[0]);
-        } else if (args[1].equalsIgnoreCase("ssp")) {
-            embeddingClient = new SSPClient(args[0]);
-        } else {
-            throw new RuntimeException("Invalid embedding model");
+    static class RuleStats {
+        String rule;
+        public double pcaconf;
+        public double conf;
+        public double mmr;
+        public double quality;
+
+        public RuleStats(String rule, double pcaconf, double conf, double mmr, double quality) {
+            this.rule = rule;
+            this.pcaconf = pcaconf;
+            this.conf = conf;
+            this.mmr = mmr;
+            this.quality = quality;
+        }
+    }
+
+    static class CompareF implements Comparator<RuleStats> {
+        double lambda;
+
+        public CompareF(double lambda) {
+            this.lambda = lambda;
         }
 
+        @Override
+        public int compare(RuleStats o1, RuleStats o2) {
+            return Double.compare(o2.conf * (1 - lambda) + o2.mmr * lambda, o1.conf * (1 - lambda) + o1.mmr * lambda);
+        }
+    }
+
+    // args: <workspace> <file> <range> <output>
+    public static void main(String[] args) throws Exception {
+//        args = "../data/imdb/ ../data/imdb/amie.xyz.stats.sp10 5 ../data/imdb/amie.xyz.stats.sp10.stats".split("\\s++");
         knowledgeGraph = new KnowledgeGraph(args[0]);
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(args[2])));
+        BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(args[1])));
         PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(args[3]))));
         String line;
-        int ruleCount = 0;
-
-        BlockingQueue<Pair<Rule, String>> queue = new LinkedBlockingQueue<Pair<Rule, String>>();
+        ArrayList<RuleStats> stats = new ArrayList<>();
+        int range = Integer.parseInt(args[2]);
         while ((line = in.readLine()) != null) {
-            ++ruleCount;
             if (line.isEmpty()) {
                 break;
             }
-            String arr[] = line.split("\t");
-            String rule = arr[0];
-            LOGGER.info("Loading rule: " + rule);
-            Rule r = parseRule(knowledgeGraph, rule);
-            queue.add(new Pair<>(r, rule));
+            String[] arr = line.split("\t");
+            Rule r = parseRule(knowledgeGraph, arr[0]);
+            LOGGER.info("Inferring rule: " + arr[0]);
+            HashSet<SOInstance> instances = matchRule(r);
+            int pid = r.atoms.get(0).pid;
+            int localNumTrue = 0;
+            int localPredict = 0;
+
+            for (SOInstance so : instances) {
+                if (!knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {
+                    ++localPredict;
+                    boolean unknown = !knowledgeGraph.idealFacts.containFact(so.subject, pid, so.object);
+                    if (!unknown) {
+                        ++localNumTrue;
+                    }
+                }
+            }
+            double quality = ((double) localNumTrue) / localPredict;
+            stats.add(new RuleStats(arr[0], Double.parseDouble(arr[3]), Double.parseDouble(arr[2]), Double
+                    .parseDouble(arr[4]), quality));
         }
         in.close();
+        //
+        double[] pca = new double[stats.size() / range];
+        double[][] econf = new double[11][stats.size() / range];
 
-        ExecutorService executor = Executors.newFixedThreadPool(50);
-        List<Future> futures = new ArrayList<>();
-        for (int i = 0; i < 50; ++i) {
-            futures.add(executor.submit(new Runner(embeddingClient, queue, out)));
-        }
-        try {
-            for (Future f : futures) {
-                f.get();
+        Collections.sort(stats, new Comparator<RuleStats>() {
+            @Override
+            public int compare(RuleStats o1, RuleStats o2) {
+                return Double.compare(o2.pcaconf, o2.pcaconf);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        });
+        double avg = 0;
+        for (int i = 0; i < stats.size(); ++i) {
+            avg += stats.get(i).quality;
+            if (i % range == range - 1) {
+                pca[i / range] = avg / (i + 1);
+            }
         }
-        executor.shutdown();
+        for (int k = 0; k < 11; ++k) {
+            Collections.sort(stats, new CompareF(k * 0.1));
+            avg = 0;
+            for (int i = 0; i < stats.size(); ++i) {
+                avg += stats.get(i).quality;
+                if (i % range == range - 1) {
+                    econf[k][i / range] = avg / (i + 1);
+                }
+            }
+        }
 
+        out.println("topk\tpca\tconf_.0\tconf_.1\tconf_.2\tconf_.3\tconf_.4\tconf_.5\tconf_.6\tconf_.7\tconf_" +
+                ".8\tconf_.9\tconf_1.0\n");
+        for (int k = 0; k < stats.size() / range; ++k) {
+
+            out.printf("%d\t%.3f\t", (k + 1) * range, pca[k]);
+            for (int i = 0; i < 11; ++i) {
+                out.printf("%.3f", econf[i][k]);
+                if (i < 10) {
+                    out.print("\t");
+                } else {
+                    out.print("\n");
+                }
+            }
+        }
         out.close();
     }
 }
