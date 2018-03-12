@@ -204,7 +204,9 @@ public class InferBatch {
 
     // args: <workspace> <file> <range> <output>
     public static void main(String[] args) throws Exception {
-//        args = "../data/imdb/ ../data/imdb/amie.xyz.stats.sp10 5 ../data/imdb/amie.xyz.stats.sp10.stats".split("\\s++");
+//        args = "../data/fb15k-new/ ../data/fb15k-new/amie.xyz.ssp.sp10 10 ../data/fb15k-new/amie.xyz.ssp.sp10.txt"
+//                .split
+//                ("\\s++");
         knowledgeGraph = new KnowledgeGraph(args[0]);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(args[1])));
@@ -266,10 +268,10 @@ public class InferBatch {
             }
         }
 
-        out.print("topk\tconf_.0\tconf_.1\tconf_.2\tconf_.3\tconf_.4\tconf_.5\tconf_.6\tconf_.7\tconf_" +
-                ".8\tconf_.9\tconf_1.0\tpcaconf\n");
+        out.print("ew\t0\t0.1\t0.2\t0.3\t0.4\t0.5\t0.6\t0.7\t0" +
+                ".8\t0.9\t1.0\tpcaconf\n");
         for (int k = 0; k < stats.size() / range; ++k) {
-            out.printf("%d\t", (k + 1) * range);
+            out.printf("top_%d\t", (k + 1) * range);
             for (int i = 0; i < 11; ++i) {
                 out.printf("%.3f\t", econf[i][k]);
             }
