@@ -204,7 +204,7 @@ public class InferBatch {
 
     // args: <workspace> <file> <range> <output>
     public static void main(String[] args) throws Exception {
-//        args = "../data/fb15k-new/ ../data/fb15k-new/amie.xyz.ssp.sp10 10 ../data/fb15k-new/amie.xyz.ssp.sp10.txt"
+//        args = "../data/fb15k-new/ ../data/fb15k-new/amie.xyz.hole.sp10 10 ../data/fb15k-new/amie.xyz.hole.sp10.txt"
 //                .split
 //                ("\\s++");
         knowledgeGraph = new KnowledgeGraph(args[0]);
@@ -247,7 +247,7 @@ public class InferBatch {
         Collections.sort(stats, new Comparator<RuleStats>() {
             @Override
             public int compare(RuleStats o1, RuleStats o2) {
-                return Double.compare(o2.pcaconf, o2.pcaconf);
+                return Double.compare(o2.pcaconf, o1.pcaconf);
             }
         });
         double avg = 0;
