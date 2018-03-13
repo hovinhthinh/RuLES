@@ -244,6 +244,7 @@ public class InferBatch {
         double[] pca = new double[stats.size() / range];
         double[][] econf = new double[11][stats.size() / range];
 
+        Collections.shuffle(stats);
         Collections.sort(stats, new Comparator<RuleStats>() {
             @Override
             public int compare(RuleStats o1, RuleStats o2) {
