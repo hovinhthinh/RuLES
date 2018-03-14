@@ -33,7 +33,7 @@ public class Main {
         options.addOption(option);
 
         // embeddingModel
-        option = new Option("em", "embedding_model", true, "Embedding model ('transe'/'hole')");
+        option = new Option("em", "embedding_model", true, "Embedding model ('transe'/'hole'/'ssp')");
         option.setRequired(true);
         options.addOption(option);
 
@@ -48,7 +48,7 @@ public class Main {
         options.addOption(option);
 
         // maxNumVariables
-        option = new Option("nv", "max_num_var", true, "Maximum number of variables (default: 4)");
+        option = new Option("nv", "max_num_var", true, "Maximum number of variables (default: 3)");
         option.setRequired(false);
         options.addOption(option);
 
@@ -99,7 +99,7 @@ public class Main {
         options.addOption(option);
 
         // minHeadCoverage
-        option = new Option("hc", "min_hc", true, "Minimum head coverage of mined rules (default: 0.02)");
+        option = new Option("hc", "min_hc", true, "Minimum head coverage of mined rules (default: 0.01)");
         option.setRequired(false);
         options.addOption(option);
 
@@ -109,7 +109,7 @@ public class Main {
         options.addOption(option);
 
         // embeddingWeight
-        option = new Option("ew", "embedding_weight", true, "Weight of embedding in score function (default: 0.8)");
+        option = new Option("ew", "embedding_weight", true, "Weight of embedding in score function (default: 0.3)");
         option.setRequired(false);
         options.addOption(option);
 

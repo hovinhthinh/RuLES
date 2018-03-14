@@ -10,7 +10,7 @@ public class MinerConfig {
     public String embeddingModel = "transe";
 
     // Language bias.
-    public int maxNumVariables = 4;
+    public int maxNumVariables = 3;
     public int maxVariableDegree = 3; // for rules with disjunction, second head atom is ignored for computing variable
     // degree.
 
@@ -25,7 +25,7 @@ public class MinerConfig {
     public int minSupport = 2;
 
     // Content prune options.
-    public double minHeadCoverage = 0.02;
+    public double minHeadCoverage = 0.01;
     public double minExceptionCoverage = 0.2;
 
     // Mining options.
@@ -34,7 +34,7 @@ public class MinerConfig {
     public boolean disjunction = false;
 
     // Scoring options.
-    public double embeddingWeight = 0.8;
+    public double embeddingWeight = 0.3;
     public boolean usePCAConf = false;
 
 

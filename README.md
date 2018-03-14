@@ -66,7 +66,7 @@ The embedding model will run and the embedding data will be stored in file `tran
 ```
 $ bash run_hole.sh --workspace <workspace> --margin <margin> --lr <starting_learning_rate> --ncomp <embedding_dimensions>
 # Ex: $ bash run_hole.sh --workspace ./data/imdb/ --margin 2 --lr 0.1 --ncomp 150
-# Ex: $ bash run_hole.sh --workspace ./data/fb15k/ --margin 0.1 --lr 0.1 --ncomp 150
+# Ex: $ bash run_hole.sh --workspace ./data/fb15k/ --margin 0.15 --lr 0.1 --ncomp 150
 ```
 The embedding model will run and the embedding data will be stored in file `hole` in the workspace folder.
 #### 3.3. SSP
@@ -95,7 +95,7 @@ usage: utility-name
  -o,--output <arg>                       Output file path (default: '<workspace>/rules.txt')
  -ms,--min_support <arg>                 Min support of rule (default: 2)
  -mc,--min_conf <arg>                    Min confidence of rule (not counting mrr) (default: 0.1)
- -nv,--max_num_var <arg>                 Maximum number of variables (default: 4)
+ -nv,--max_num_var <arg>                 Maximum number of variables (default: 3)
  -vd,--max_var_deg <arg>                 Maximum variable degree (number of predicates having the same variable) (default: 3)
  -na,--max_num_atom <arg>                Maximum number of atoms (default: 4)
  -nbpa,--max_num_binary_pos_atom <arg>   Maximum number of binary positive atoms (default: INF)
@@ -104,17 +104,17 @@ usage: utility-name
  -nbna,--max_num_binary_neg_atom <arg>   Maximum number of binary exception atoms (default: 1)
  -nuna,--max_num_unary_neg_atom <arg>    Maximum number of unary exception atoms (default: 1)
  -nupo,--max_num_uniq_pred_occur <arg>   Maximum number of occurrence of each unique predicate (default: 2)
- -hc,--min_hc <arg>                      Minimum head coverage of mined rules (default: 0.02)
+ -hc,--min_hc <arg>                      Minimum head coverage of mined rules (default: 0.01)
  -ec,--min_ec <arg>                      Minimum exception coverage of adding exception atom (default: 0.2)
  -em,--embedding_model <arg>             Embedding model ('transe'/'hole'/'ssp')
- -ew,--embedding_weight <arg>            Weight of embedding in score function (default: 0.8)
+ -ew,--embedding_weight <arg>            Weight of embedding in score function (default: 0.3)
  -pca,--use_pca_conf                     Use pca confidence instead of standard confidence
  -dj,--disjunction                       Mine rule with disjunction in the head
  -nw,--num_workers <arg>                 Number of parallel workers (default: 8)
 ```
 It is recommended to extend the memory for java job with Xmx option depending on your machine. For example, following command will run the mining system with 100GB RAM.
 ```
-$ java -Xmx100G -jar mining/build.jar -w <workspace> -o <outputfile>
+$ java -XX:-UseGCOverheadLimit -Xmx100G -jar mining/build.jar -w <workspace> -o <outputfile>
 ```
 Mined rules will be outputted to `<outputfile>` and `<outputfile>.sorted`.
 ### 5. Infer new facts
