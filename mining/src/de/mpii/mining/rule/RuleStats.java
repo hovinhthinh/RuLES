@@ -34,7 +34,7 @@ public class RuleStats {
     public static final int HEAD_INSTANCE_BOUND = 10000;
 
     public int ruleSupport[], bodySupport;
-    public double[] headCoverage, confidence, mrr, scr;
+    public double[] headCoverage, confidence, mrr, scr, ec;
 
     public HashSet<SOInstance> headInstances;
 
@@ -49,6 +49,8 @@ public class RuleStats {
         bodySupport = 0;
         headCoverage = new double[sourceScr.length];
         confidence = new double[sourceScr.length];
+        ec = new double[sourceScr.length];
+        Arrays.fill(ec, -1);
         mrr = new double[sourceScr.length];
         Arrays.fill(mrr, -1);
         scr = new double[sourceScr.length];

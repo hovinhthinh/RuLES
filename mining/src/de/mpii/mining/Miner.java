@@ -268,17 +268,15 @@ public class Miner implements Runnable {
                     for (int pid = 0; pid < knowledgeGraph.nRelations; ++pid) {
                         if (r.stats.scr[pid] != -1) {
                             r.atoms.get(0).pid = pid;
-                            System.out.printf("%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\n", r.getString
-                                            (knowledgeGraph.relationsString, knowledgeGraph.typesString),
-                                    r.stats.headCoverage[pid], config.usePCAConf ? "pca" : "", r.stats.confidence[pid], r
-                                            .stats
-                                            .mrr[pid], r.stats
-                                            .scr[pid]);
+                            System.out.printf("%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\tsup:\t%d\tec:\t%" +
+                                            ".3f\n", r.getString(knowledgeGraph.relationsString, knowledgeGraph.typesString),
+                                    r.stats.headCoverage[pid], config.usePCAConf ? "pca" : "", r.stats.confidence[pid],
+                                    r.stats.mrr[pid], r.stats.scr[pid], r.stats.ruleSupport[pid], r.stats.ec[pid]);
                             synchronized (output) {
-                                output.printf("%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\n", r.getString
-                                                (knowledgeGraph.relationsString, knowledgeGraph.typesString),
-                                        r.stats.headCoverage[pid], config.usePCAConf ? "pca" : "", r.stats
-                                                .confidence[pid], r.stats.mrr[pid], r.stats.scr[pid]);
+                                output.printf("%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\tsup:\t%d\tec:\t%" +
+                                                ".3f\n", r.getString(knowledgeGraph.relationsString, knowledgeGraph.typesString),
+                                        r.stats.headCoverage[pid], config.usePCAConf ? "pca" : "", r.stats.confidence[pid],
+                                        r.stats.mrr[pid], r.stats.scr[pid], r.stats.ruleSupport[pid], r.stats.ec[pid]);
                                 output.flush();
                             }
                         }
@@ -295,7 +293,8 @@ public class Miner implements Runnable {
             int state = r.getState();
             // Type of last atom:
             // empty: -1 -> dangling(0) -> binary closed(1) -> unary closed(2) -> unary exception(3) -> binary exception(4).
-            if (state <= 0 && r.nVariables < config.maxNumVariables && r.getNumBinaryPositiveAtoms() < config.maxNumBinaryPositiveAtoms) {
+            if (state <= 0 && r.nVariables < config.maxNumVariables && r.getNumBinaryPositiveAtoms() < config
+                    .maxNumBinaryPositiveAtoms && r.atoms.size() < config.maxNumAtoms - 1) {
                 // TODO:
                 // Migated from Pruner.
                 // Add dangling atoms.

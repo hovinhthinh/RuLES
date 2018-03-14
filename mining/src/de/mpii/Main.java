@@ -127,7 +127,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-//        args = "-w ../data/imdb -em transe -dj -o tmp -na 3 -ew 0 -ms 4".split("\\s++");
+//        args = "-w ../data/imdb -em transe -o tmp -na 3 -ew 0 -ms 2 -nupa 0 -nna 1".split("\\s++");
         MinerConfig config = new MinerConfig();
 
         // Get config.
