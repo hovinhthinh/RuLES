@@ -76,13 +76,8 @@ public class ComputeStats {
                 double conf = ((double) sup) / instances.size();
                 double pcaconf = pcaBodySup == 0 ? 0 : ((double) sup) / pcaBodySup;
 
-                double mrr02 = conf * 0.8 + mrr * 0.2;
-                double mrr05 = conf * 0.5 + mrr * 0.5;
-                double mrr08 = conf * 0.2 + mrr * 0.8;
                 synchronized (out) {
-                    out.printf("%s\t%d\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\n", front.second, sup, conf, pcaconf, mrr,
-                            mrr02, mrr05,
-                            mrr08);
+                    out.printf("%s\t%d\t%.9f\t%.9f\t%.9f\n", front.second, sup, conf, pcaconf, mrr);
                 }
             }
         }
