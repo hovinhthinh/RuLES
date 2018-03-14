@@ -2,8 +2,8 @@ package de.mpii.mining.rule;
 
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -34,7 +34,7 @@ public class RuleQueue {
     private int operationCount;
 
     public RuleQueue(int enqueueLimit) {
-        enqueuedRuleCode = Collections.synchronizedSet(new HashSet<>());
+        enqueuedRuleCode = Collections.synchronizedSet(new TreeSet<Long>());
         rulesQueue = new PriorityBlockingQueue<>(11, new RuleComparator());
 
         this.enqueueLimit = enqueueLimit;
