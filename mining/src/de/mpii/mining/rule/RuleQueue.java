@@ -2,8 +2,8 @@ package de.mpii.mining.rule;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -32,14 +32,16 @@ public class RuleQueue {
     private int enqueueLimit;
     private int enqueueCount;
     private int operationCount;
+    private int currentNumAtom;
 
     public RuleQueue(int enqueueLimit) {
-        enqueuedRuleCode = Collections.synchronizedSet(new TreeSet<Long>());
+        enqueuedRuleCode = Collections.synchronizedSet(new HashSet<>());
         rulesQueue = new PriorityBlockingQueue<>(11, new RuleComparator());
 
         this.enqueueLimit = enqueueLimit;
         enqueueCount = 0;
         operationCount = 0;
+        currentNumAtom = 2;
     }
 
     public int size() {
@@ -75,7 +77,16 @@ public class RuleQueue {
                 LOGGER.info("RuleBodyQueueSize: " + rulesQueue.size());
             }
             // Wait for 15 min before returning.
-            return rulesQueue.poll(900, TimeUnit.SECONDS);
+            synchronized (rulesQueue) {
+                Rule front = rulesQueue.poll(900, TimeUnit.SECONDS);
+                if (front != null) {
+                    if (front.atoms.size() > currentNumAtom) {
+                        enqueuedRuleCode.clear();
+                        currentNumAtom = front.atoms.size();
+                    }
+                }
+                return front;
+            }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
