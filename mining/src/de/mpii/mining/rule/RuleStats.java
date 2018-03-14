@@ -59,7 +59,7 @@ public class RuleStats {
             withDisjunction) {
         bodySupport = headInstances.size();
         for (int pid = 0; pid < confidence.length; ++pid) {
-            if (sourceScr[pid] == -1) {
+            if (sourceScr[pid] == -1 || bodySupport <= config.minSupport) {
                 scr[pid] = -1;
             } else {
                 HashSet<Integer> goodS = null;
