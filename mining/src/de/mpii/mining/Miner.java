@@ -11,10 +11,7 @@ import de.mpii.mining.graph.KnowledgeGraph;
 import de.mpii.mining.rule.*;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -349,7 +346,8 @@ public class Miner implements Runnable {
                 // Add closing unary atoms.
                 if (state <= 2 && r.getNumUnaryPositiveAtoms() < config.maxNumUnaryPositiveAtoms) {
                     for (int i = 0; i < r.nVariables; ++i) {
-                        for (int j : r.extensionInfo.unaryTypes[i]) {
+                        for (Map.Entry<Integer, Integer> e : r.extensionInfo.unaryTypes[i].entrySet()) {
+                            int j = e.getKey();
                             Rule newR = r.addClosingUnaryAtom(i, j, false);
                             if (newR != null && !RulePruner.isFormatPruned(newR, knowledgeGraph, config)) {
                                 ruleQueue.enqueue(newR);
@@ -363,7 +361,7 @@ public class Miner implements Runnable {
                     // Add exception unary atoms.
                     if (state <= 3 && nUnaryExceptions < config.maxNumUnaryExceptionAtoms) {
                         for (int i = 0; i < r.nVariables; ++i) {
-                            for (int j : r.extensionInfo.unaryTypes[i]) {
+                            for (int j : r.extensionInfo.getTopTypesForVariable(i)) {
                                 Rule newR = r.addClosingUnaryAtom(i, j, true);
                                 if (newR != null && !RulePruner.isFormatPruned(newR, knowledgeGraph, config)) {
                                     ruleQueue.enqueue(newR);

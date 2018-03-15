@@ -1,20 +1,20 @@
 package de.mpii.mining.rule;
 
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by hovinhthinh on 11/16/17.
  */
 public class RuleExtensionInfo {
+    public static final int UNARY_TYPES_TOP_LIMIT = 10;
     public HashSet<Integer>[][] binaryClosingPids;
     public HashSet<Integer>[] binaryDanglingPids; // can have negative
-    public HashSet<Integer>[] unaryTypes;
+    public HashMap<Integer, Integer>[] unaryTypes;
 
     public RuleExtensionInfo(int nVariables) {
         binaryClosingPids = new HashSet[nVariables][nVariables];
         binaryDanglingPids = new HashSet[nVariables];
-        unaryTypes = new HashSet[nVariables];
+        unaryTypes = new HashMap[nVariables];
     }
 
     public void addClosingPids(int subject, int object, List<Integer> pids) {
@@ -42,8 +42,29 @@ public class RuleExtensionInfo {
             return;
         }
         if (unaryTypes[subject] == null) {
-            unaryTypes[subject] = new HashSet<>();
+            unaryTypes[subject] = new HashMap<>();
         }
-        unaryTypes[subject].addAll(types);
+        for (int type : types) {
+            unaryTypes[subject].put(type, unaryTypes[subject].getOrDefault(type, 0) + 1);
+        }
+    }
+
+    public List<Integer> getTopTypesForVariable(int var) {
+        ArrayList<Map.Entry<Integer, Integer>> arr = new ArrayList<>();
+        arr.addAll(unaryTypes[var].entrySet());
+        Collections.sort(arr, new Comparator<Map.Entry<Integer, Integer>>() {
+            @Override
+            public int compare(Map.Entry<Integer, Integer> o1, Map.Entry<Integer, Integer> o2) {
+                return Integer.compare(o2.getValue(), o1.getValue());
+            }
+        });
+        List<Integer> result = new LinkedList<>();
+        for (int i = 0; i < arr.size(); ++i) {
+            result.add(arr.get(i).getKey());
+            if (i >= UNARY_TYPES_TOP_LIMIT) {
+                break;
+            }
+        }
+        return result;
     }
 }
