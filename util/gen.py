@@ -127,7 +127,10 @@ if os.path.isfile(WORKSPACE + "/entities_description.txt"):
     with open(WORKSPACE + "/entities_description.txt") as f:
         for line in f.readlines():
             arr = line.strip().split("\t")
-            data[entity2id[arr[0]]] = arr[1];
+            if arr[0] in entity2id:
+                data[entity2id[arr[0]]] = arr[1];
+            else:
+                print('invalid entity in description file:', arr[0])
 
     with open(WORKSPACE + "/e_desc.txt", "w") as f:
         for i in range(e):
