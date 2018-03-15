@@ -1,12 +1,12 @@
-package de.mpii;
+package de.mpii.util;
 
 import de.mpii.mining.atom.Atom;
 import de.mpii.mining.atom.BinaryAtom;
+import de.mpii.mining.atom.InstantiatedAtom;
 import de.mpii.mining.atom.UnaryAtom;
 import de.mpii.mining.graph.KnowledgeGraph;
 import de.mpii.mining.rule.Rule;
 import de.mpii.mining.rule.SOInstance;
-import de.mpii.util.Pair;
 
 import java.io.*;
 import java.util.*;
@@ -31,7 +31,6 @@ public class Infer {
             String str = ruleString.substring(i, j + 1);
             //
 
-
             boolean negated = false;
             if (str.startsWith("not ")) {
                 negated = true;
@@ -42,19 +41,40 @@ public class Infer {
             String vars = str.substring(index);
             if (vars.contains(", ")) {
                 index = vars.indexOf(", ");
-                // Binary
                 String subject = vars.substring(1, index);
-                if (!varsMap.containsKey(subject)) {
-                    varsMap.put(subject, varsMap.size());
-                }
                 String object = vars.substring(index + 2, vars.length() - 1);
-                if (!varsMap.containsKey(object)) {
-                    varsMap.put(object, varsMap.size());
+                if (subject.startsWith("%") || object.startsWith("%")) {
+                    // Instantiated
+                    if (object.startsWith("%")) {
+                        if (!varsMap.containsKey(subject)) {
+                            varsMap.put(subject, varsMap.size());
+                        }
+                        int sid = varsMap.get(subject),
+                                pid = graph.relationsStringMap.get(predicate),
+                                value = knowledgeGraph.entitiesStringMap.get(object.substring(1, object.length() - 1));
+                        r.atoms.add(new InstantiatedAtom(false, negated, false, sid, pid, value));
+                    } else {
+                        if (!varsMap.containsKey(object)) {
+                            varsMap.put(object, varsMap.size());
+                        }
+                        int sid = varsMap.get(object),
+                                pid = graph.relationsStringMap.get(predicate),
+                                value = knowledgeGraph.entitiesStringMap.get(subject.substring(1, subject.length() - 1));
+                        r.atoms.add(new InstantiatedAtom(false, negated, true, sid, pid, value));
+                    }
+                } else {
+                    // Binary
+                    if (!varsMap.containsKey(subject)) {
+                        varsMap.put(subject, varsMap.size());
+                    }
+                    if (!varsMap.containsKey(object)) {
+                        varsMap.put(object, varsMap.size());
+                    }
+                    int sid = varsMap.get(subject),
+                            pid = graph.relationsStringMap.get(predicate),
+                            oid = varsMap.get(object);
+                    r.atoms.add(new BinaryAtom(false, negated, sid, pid, oid));
                 }
-                int sid = varsMap.get(subject),
-                        pid = graph.relationsStringMap.get(predicate),
-                        oid = varsMap.get(object);
-                r.atoms.add(new BinaryAtom(false, negated, sid, pid, oid));
             } else {
                 // Unary
                 String subject = vars.substring(1, vars.length() - 1);
@@ -97,7 +117,22 @@ public class Infer {
             return;
         }
         Atom a = rule.atoms.get(position);
-        if (a instanceof UnaryAtom) {
+        if (a instanceof InstantiatedAtom) {
+            InstantiatedAtom atom = (InstantiatedAtom) a;
+            if (variableValues[a.sid] == -1) {
+                // This case only happens for positive atom.
+                variableValues[a.sid] = -1;
+                throw new RuntimeException("To be implemented");
+            } else {
+                boolean hasEdge = atom.reversed ? knowledgeGraph.trueFacts.containFact(atom.value,
+                        atom.pid, variableValues[atom.sid]) : knowledgeGraph.trueFacts.containFact
+                        (variableValues[atom.sid], atom.pid, atom.value);
+                if (hasEdge == a.negated) {
+                    return;
+                }
+                recur(rule, position + 1, variableValues, headInstances);
+            }
+        } else if (a instanceof UnaryAtom) {
             if (variableValues[a.sid] == -1) {
                 // This case only happens for positive atom.
                 for (int t : knowledgeGraph.typeInstances[a.pid]) {
@@ -206,8 +241,6 @@ public class Infer {
             LOGGER.info("Inferring rule: " + rule);
             HashSet<SOInstance> instances = matchRule(r);
             System.out.println("body_support: " + instances.size());
-            System.out.println(r.getString(knowledgeGraph.relationsString, knowledgeGraph.typesString, knowledgeGraph
-                    .entitiesString));
             int pid = r.atoms.get(0).pid;
             int localNumTrue = 0;
             int localPredict = 0;
@@ -231,9 +264,9 @@ public class Infer {
                     }
                 }
             }
-            averageQuality += ((double)localNumTrue) / localPredict;
-            LOGGER.info(String.format("quality = %.3f", ((double)localNumTrue) / localPredict));
-            spearman.add(new Pair<>(((double)localNumTrue) / localPredict, 1 + top - ruleCount));
+            averageQuality += ((double) localNumTrue) / localPredict;
+            LOGGER.info(String.format("quality = %.3f", ((double) localNumTrue) / localPredict));
+            spearman.add(new Pair<>(((double) localNumTrue) / localPredict, 1 + top - ruleCount));
         }
         Collections.sort(spearman, new Comparator<Pair<Double, Integer>>() {
             @Override
@@ -248,7 +281,7 @@ public class Infer {
         spearCo = 1 - 6 * spearCo / top / (top * top - 1);
         in.close();
         out.close();
-        LOGGER.info(String.format("#predictions = %d, known_rate = %.3f", total, 1-((double) unknownNum / total)));
+        LOGGER.info(String.format("#predictions = %d, known_rate = %.3f", total, 1 - ((double) unknownNum / total)));
         LOGGER.info(String.format("#average_quality = %.3f", averageQuality / top));
         LOGGER.info(String.format("Spearman = %.3f", spearCo));
         if (ruleCount != top) {
