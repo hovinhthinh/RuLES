@@ -1,5 +1,7 @@
 package de.mpii.mining.rule;
 
+import de.mpii.mining.graph.KnowledgeGraph;
+
 import java.util.*;
 
 /**
@@ -7,14 +9,17 @@ import java.util.*;
  */
 public class RuleExtensionInfo {
     public static final int UNARY_TYPES_TOP_LIMIT = 50;
+    public static final int INSTANTIATED_LINKS_TOP_LIMIT = 50;
     public HashSet<Integer>[][] binaryClosingPids;
     public HashSet<Integer>[] binaryDanglingPids; // can have negative
     public HashMap<Integer, Integer>[] unaryTypes;
+    public HashMap<Long, Integer>[] instantiatedLinks;
 
     public RuleExtensionInfo(int nVariables) {
         binaryClosingPids = new HashSet[nVariables][nVariables];
         binaryDanglingPids = new HashSet[nVariables];
         unaryTypes = new HashMap[nVariables];
+        instantiatedLinks = new HashMap[nVariables];
     }
 
     public void addClosingPids(int subject, int object, List<Integer> pids) {
@@ -67,4 +72,37 @@ public class RuleExtensionInfo {
         }
         return result;
     }
+
+    public void addInstantiatedLinks(int subject, List<KnowledgeGraph.OutgoingEdge> links) {
+        if (links == null) {
+            return;
+        }
+        if (instantiatedLinks[subject] == null) {
+            instantiatedLinks[subject] = new HashMap<>();
+        }
+        for (KnowledgeGraph.OutgoingEdge e : links) {
+            long code = e.encode();
+            instantiatedLinks[subject].put(code, instantiatedLinks[subject].getOrDefault(code, 0) + 1);
+        }
+    }
+
+    public List<KnowledgeGraph.OutgoingEdge> getTopInstantiatedLinksForVariable(int var) {
+        ArrayList<Map.Entry<Long, Integer>> arr = new ArrayList<>();
+        arr.addAll(instantiatedLinks[var].entrySet());
+        Collections.sort(arr, new Comparator<Map.Entry<Long, Integer>>() {
+            @Override
+            public int compare(Map.Entry<Long, Integer> o1, Map.Entry<Long, Integer> o2) {
+                return Integer.compare(o2.getValue(), o1.getValue());
+            }
+        });
+        List<KnowledgeGraph.OutgoingEdge> result = new LinkedList<>();
+        for (int i = 0; i < arr.size(); ++i) {
+            result.add(KnowledgeGraph.OutgoingEdge.fromCode(arr.get(i).getKey()));
+            if (i >= INSTANTIATED_LINKS_TOP_LIMIT) {
+                break;
+            }
+        }
+        return result;
+    }
+
 }

@@ -142,7 +142,7 @@ public class KnowledgeGraph {
             }
             pid1Pid2CountReversed = new HashMap<>();
             for (long so : soPidMap.keySet()) {
-                int subject = (int)(so / 1000000), object = (int)(so % 1000000);
+                int subject = (int) (so / 1000000), object = (int) (so % 1000000);
                 List<Integer> pids = soPidMap.get(so);
                 List<Integer> pidsR = soPidMap.get(encodeSO(object, subject));
                 if (pidsR == null) {
@@ -214,6 +214,19 @@ public class KnowledgeGraph {
         public OutgoingEdge(int pid, int oid) {
             this.pid = pid;
             this.oid = oid;
+        }
+
+        public long encode() {
+            return ((long) pid) * 1000000000 + oid;
+        }
+
+        public static OutgoingEdge fromCode(long code) {
+            int pid = (int) (code / 1000000000), oid = (int) (code % 1000000000);
+            if (oid < 0) {
+                oid += 1000000000;
+                --pid;
+            }
+            return new OutgoingEdge(pid, oid);
         }
     }
 

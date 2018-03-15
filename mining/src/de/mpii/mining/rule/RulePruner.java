@@ -63,12 +63,12 @@ public class RulePruner {
         // Check if 2 same predicates in the body sharing the same var (at same subject or object), only process if the
         // max var contains <= 10 such predicate.
         for (int i = 1; i < r.atoms.size(); ++i) {
-            if (r.atoms.get(i) instanceof UnaryAtom) {
+            if (!(r.atoms.get(i) instanceof BinaryAtom)) {
                 continue;
             }
             BinaryAtom a = (BinaryAtom) r.atoms.get(i);
             for (int j = i + 1; j < r.atoms.size(); ++j) {
-                if (r.atoms.get(j) instanceof UnaryAtom) {
+                if (!(r.atoms.get(j) instanceof BinaryAtom)) {
                     continue;
                 }
                 BinaryAtom b = (BinaryAtom) r.atoms.get(j);

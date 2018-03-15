@@ -6,7 +6,7 @@ import de.mpii.embedding.SSPClient;
 import de.mpii.embedding.TransEClient;
 import de.mpii.mining.atom.Atom;
 import de.mpii.mining.atom.BinaryAtom;
-import de.mpii.mining.atom.InstanceAtom;
+import de.mpii.mining.atom.InstantiatedAtom;
 import de.mpii.mining.graph.KnowledgeGraph;
 import de.mpii.mining.rule.SOInstance;
 
@@ -173,7 +173,7 @@ class ConstantRuleStats {
 
         // Uncomment for rule without disjunction.
 //        for (HeadStats head : goodHeads) {
-//            InstanceAtom atom = (InstanceAtom) rule.atoms.get(0);
+//            InstantiatedAtom atom = (InstantiatedAtom) rule.atoms.get(0);
 //            atom.sid = 0;
 //            atom.pid = head.pid >= 0 ? head.pid : -head.pid - 1;
 //            atom.value = head.value;
@@ -221,7 +221,7 @@ class ConstantRuleStats {
                     scr += mrr * config.embeddingWeight;
                 }
                 double increaseScr = scr - Math.max(0, Math.max(head1.scr, head2.scr));
-                if (increaseScr >= 1e-3) {
+                if (increaseScr >= 0.2) {
                     System.out.printf("%s\tsup:\t%d\tconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\tinc\t%.3f\n", rule
                                     .getDisjunctionString
                                             (head1, head2, graph.relationsString, graph.entitiesString), ruleSupport, conf,
@@ -285,7 +285,7 @@ class ConstantRule {
         r.atoms = new ArrayList<>();
         // This fix to prevent different threads from accessing the same first atom when outputting.
         if (atoms.size() > 0) {
-            r.atoms.add(new InstanceAtom(true, false, false, 0, -1, -1));
+            r.atoms.add(new InstantiatedAtom(true, false, false, 0, -1, -1));
             for (int i = 1; i < atoms.size(); ++i) {
                 r.atoms.add(atoms.get(i));
             }
@@ -312,18 +312,18 @@ class ConstantRule {
         ConstantRule r = this.cloneRule();
         if (r.nVariables == 0) {
             r.nVariables = 1;
-            r.atoms.add(new InstanceAtom(false, false, false, -1, -1, -1));
+            r.atoms.add(new InstantiatedAtom(false, false, false, -1, -1, -1));
             return r;
         }
         for (Atom a : r.atoms) {
-            if (a instanceof InstanceAtom) {
-                InstanceAtom atom = (InstanceAtom) a;
+            if (a instanceof InstantiatedAtom) {
+                InstantiatedAtom atom = (InstantiatedAtom) a;
                 if (atom.sid == sid && atom.pid == pid && atom.value == value) {
                     return null;
                 }
             }
         }
-        r.atoms.add(new InstanceAtom(false, false, reversed, sid, pid, value));
+        r.atoms.add(new InstantiatedAtom(false, false, reversed, sid, pid, value));
         return r;
     }
 
@@ -376,8 +376,8 @@ class ConstantRule {
                     if (mapping[a.sid] != i) {
                         continue;
                     }
-                    if (a instanceof InstanceAtom) {
-                        InstanceAtom atom = (InstanceAtom) a;
+                    if (a instanceof InstantiatedAtom) {
+                        InstantiatedAtom atom = (InstantiatedAtom) a;
                         varCode += R_POW[atom.pid] * INSTANCE_SIGN * (atom.reversed ? REVERSED_SIGN : 1);
                     } else {
                         BinaryAtom atom = (BinaryAtom) a;
@@ -393,8 +393,8 @@ class ConstantRule {
     }
 
     private String getAtomString(Atom a, String[] relationsString, String[] entitiesString) {
-        if (a instanceof InstanceAtom) {
-            InstanceAtom atom = (InstanceAtom) a;
+        if (a instanceof InstantiatedAtom) {
+            InstantiatedAtom atom = (InstantiatedAtom) a;
             StringBuilder sb = new StringBuilder(atom.negated ? "not " : "");
             if (!atom.reversed) {
                 sb.append(relationsString[atom.pid]).append("(V").append(atom.sid).append
@@ -445,7 +445,7 @@ class ConstantRule {
         if (atoms.size() == 0) {
             return null;
         }
-        InstanceAtom atom = (InstanceAtom) atoms.get(0);
+        InstantiatedAtom atom = (InstantiatedAtom) atoms.get(0);
         atom.sid = 0;
         atom.pid = head1.pid >= 0 ? head1.pid : -head1.pid - 1;
         atom.value = head1.value;
@@ -513,15 +513,15 @@ public class ConstantMiner implements Runnable {
             return;
         }
         if (position == rule.atoms.size()) {
-            if (rule.atoms.get(rule.atoms.size() - 1) instanceof InstanceAtom) {
+            if (rule.atoms.get(rule.atoms.size() - 1) instanceof InstantiatedAtom) {
                 stats.headInstances.add(variableValues[0]);
             }
             rule.extensionVars.add(variableValues[rule.nVariables - 1]);
             return;
         }
         Atom a = rule.atoms.get(position);
-        if (a instanceof InstanceAtom) {
-            InstanceAtom atom = (InstanceAtom) a;
+        if (a instanceof InstantiatedAtom) {
+            InstantiatedAtom atom = (InstantiatedAtom) a;
             if (variableValues[a.sid] == -1) {
 //                System.out.println("here " + a.sid);
                 int lookingPid = !atom.reversed ? -atom.pid - 1 : atom.pid;
@@ -604,7 +604,7 @@ public class ConstantMiner implements Runnable {
         r.stats = stats;
 
         // Closed rule.
-        if (r.atoms.get(r.atoms.size() - 1) instanceof InstanceAtom) {
+        if (r.atoms.get(r.atoms.size() - 1) instanceof InstantiatedAtom) {
             r.stats.simplify(knowledgeGraph, embeddingClient, config, r, output);
         }
 

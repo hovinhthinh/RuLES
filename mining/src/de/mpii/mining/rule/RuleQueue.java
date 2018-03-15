@@ -76,9 +76,9 @@ public class RuleQueue {
             if (operationCount % OPERATION_LOG_INTERVAL == 0) {
                 LOGGER.info("RuleBodyQueueSize: " + rulesQueue.size());
             }
-            // Wait for 15 min before returning.
+            // Wait for 10 min before returning.
             synchronized (rulesQueue) {
-                Rule front = rulesQueue.poll(900, TimeUnit.SECONDS);
+                Rule front = rulesQueue.poll(600, TimeUnit.SECONDS);
                 if (front != null) {
                     if (front.atoms.size() > currentNumAtom) {
                         enqueuedRuleCode.clear();

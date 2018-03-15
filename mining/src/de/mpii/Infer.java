@@ -206,7 +206,8 @@ public class Infer {
             LOGGER.info("Inferring rule: " + rule);
             HashSet<SOInstance> instances = matchRule(r);
             System.out.println("body_support: " + instances.size());
-            System.out.println(r.getString(knowledgeGraph.relationsString, knowledgeGraph.typesString));
+            System.out.println(r.getString(knowledgeGraph.relationsString, knowledgeGraph.typesString, knowledgeGraph
+                    .entitiesString));
             int pid = r.atoms.get(0).pid;
             int localNumTrue = 0;
             int localPredict = 0;

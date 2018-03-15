@@ -6,6 +6,7 @@ import de.mpii.embedding.SSPClient;
 import de.mpii.embedding.TransEClient;
 import de.mpii.mining.atom.Atom;
 import de.mpii.mining.atom.BinaryAtom;
+import de.mpii.mining.atom.InstantiatedAtom;
 import de.mpii.mining.atom.UnaryAtom;
 import de.mpii.mining.graph.KnowledgeGraph;
 import de.mpii.mining.rule.*;
@@ -111,10 +112,15 @@ public class Miner implements Runnable {
 
                         }
                     }
-
                 }
                 if (variableValues[i] != -1) {
-                    rule.extensionInfo.addTypes(i, knowledgeGraph.types[variableValues[i]]);
+                    if (config.maxNumUnaryPositiveAtoms > 0 || (config.maxNumExceptionAtoms > 0 && config
+                            .maxNumUnaryExceptionAtoms > 0)) {
+                        rule.extensionInfo.addTypes(i, knowledgeGraph.types[variableValues[i]]);
+                    }
+                    if (config.maxNumExceptionAtoms > 0 && config.maxNumInstantiatedExceptionAtoms > 0) {
+                        rule.extensionInfo.addInstantiatedLinks(i, knowledgeGraph.outEdges[variableValues[i]]);
+                    }
                 }
 
                 if (variableValues[i] == -1) {
@@ -133,7 +139,22 @@ public class Miner implements Runnable {
             return;
         }
         Atom a = rule.atoms.get(position);
-        if (a instanceof UnaryAtom) {
+        if (a instanceof InstantiatedAtom) {
+            InstantiatedAtom atom = (InstantiatedAtom) a;
+            if (variableValues[a.sid] == -1) {
+                // This case only happens for positive atom.
+                variableValues[a.sid] = -1;
+                throw new RuntimeException("To be implemented");
+            } else {
+                boolean hasEdge = atom.reversed ? knowledgeGraph.trueFacts.containFact(atom.value,
+                        atom.pid, variableValues[atom.sid]) : knowledgeGraph.trueFacts.containFact
+                        (variableValues[atom.sid], atom.pid, atom.value);
+                if (hasEdge == a.negated) {
+                    return;
+                }
+                recur(rule, position + 1, variableValues, stats);
+            }
+        } else if (a instanceof UnaryAtom) {
             if (variableValues[a.sid] == -1) {
                 // This case only happens for positive atom.
                 for (int t : knowledgeGraph.typeInstances[a.pid]) {
@@ -219,8 +240,7 @@ public class Miner implements Runnable {
         // If the monotonic part is closed, then set stats.
         if (r.closed) {
             stats.simplify(knowledgeGraph, embeddingClient, config, config.disjunction && (r.atoms.size() < config
-                    .maxNumAtoms ? true :
-                    false));
+                    .maxNumAtoms ? true : false));
             r.stats = stats;
         }
 
@@ -243,14 +263,14 @@ public class Miner implements Runnable {
                     System.out.printf("%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\tinc:\t%.3f\n", r
                                     .getDisjunctionString
                                             (dstats.pid1, dstats.pid2, knowledgeGraph.relationsString, knowledgeGraph
-                                                    .typesString),
+                                                    .typesString, knowledgeGraph.entitiesString),
                             dstats.hc, config.usePCAConf ? "pca" : "", dstats.conf, dstats.mrr, dstats.scr,
                             dstats.inreaseScr);
                     synchronized (output) {
                         output.printf("%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\tinc:\t%.3f\n", r
                                         .getDisjunctionString
                                                 (dstats.pid1, dstats.pid2, knowledgeGraph.relationsString, knowledgeGraph
-                                                        .typesString),
+                                                        .typesString, knowledgeGraph.entitiesString),
                                 dstats.hc, config.usePCAConf ? "pca" : "", dstats.conf, dstats.mrr, dstats.scr,
                                 dstats.inreaseScr);
                         output.flush();
@@ -266,12 +286,14 @@ public class Miner implements Runnable {
                         if (r.stats.scr[pid] != -1) {
                             r.atoms.get(0).pid = pid;
                             System.out.printf("%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\tsup:\t%d\tec:\t%" +
-                                            ".3f\n", r.getString(knowledgeGraph.relationsString, knowledgeGraph.typesString),
+                                            ".3f\n", r.getString(knowledgeGraph.relationsString, knowledgeGraph
+                                            .typesString, knowledgeGraph.entitiesString),
                                     r.stats.headCoverage[pid], config.usePCAConf ? "pca" : "", r.stats.confidence[pid],
                                     r.stats.mrr[pid], r.stats.scr[pid], r.stats.ruleSupport[pid], r.stats.ec[pid]);
                             synchronized (output) {
                                 output.printf("%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\tsup:\t%d\tec:\t%" +
-                                                ".3f\n", r.getString(knowledgeGraph.relationsString, knowledgeGraph.typesString),
+                                                ".3f\n", r.getString(knowledgeGraph.relationsString, knowledgeGraph
+                                                .typesString, knowledgeGraph.entitiesString),
                                         r.stats.headCoverage[pid], config.usePCAConf ? "pca" : "", r.stats.confidence[pid],
                                         r.stats.mrr[pid], r.stats.scr[pid], r.stats.ruleSupport[pid], r.stats.ec[pid]);
                                 output.flush();
@@ -355,9 +377,23 @@ public class Miner implements Runnable {
                         }
                     }
                 }
+                int nInstantiatedExceptions = r.getNumInstantiatedExceptionAtoms();
                 int nUnaryExceptions = r.getNumUnaryExceptionAtoms();
                 int nBinaryExceptions = r.getNumBinaryExceptionAtoms();
-                if (nUnaryExceptions + nBinaryExceptions < config.maxNumExceptionAtoms) {
+                if (nInstantiatedExceptions + nUnaryExceptions + nBinaryExceptions < config.maxNumExceptionAtoms) {
+                    // Add exception instantiated atoms.
+                    if (state <= 3 && nInstantiatedExceptions < config.maxNumInstantiatedExceptionAtoms) {
+                        for (int i = 0; i < r.nVariables; ++i) {
+                            for (KnowledgeGraph.OutgoingEdge e : r.extensionInfo.getTopInstantiatedLinksForVariable(i)) {
+                                Rule newR = e.pid >= 0 ? r.addClosingInstantiatedAtom(i, e.pid, e.oid, true, false) : r
+                                        .addClosingInstantiatedAtom(i, -1 - e.pid, e.oid, true, true);
+                                if (newR != null && !RulePruner.isFormatPruned(newR, knowledgeGraph, config)) {
+                                    ruleQueue.enqueue(newR);
+                                }
+                            }
+                        }
+                    }
+
                     // Add exception unary atoms.
                     if (state <= 3 && nUnaryExceptions < config.maxNumUnaryExceptionAtoms) {
                         for (int i = 0; i < r.nVariables; ++i) {

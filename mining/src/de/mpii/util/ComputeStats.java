@@ -11,7 +11,6 @@ import de.mpii.mining.graph.KnowledgeGraph;
 import de.mpii.mining.rule.Rule;
 import de.mpii.mining.rule.RuleStats;
 import de.mpii.mining.rule.SOInstance;
-import de.mpii.util.Pair;
 
 import java.io.*;
 import java.util.*;

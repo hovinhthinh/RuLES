@@ -65,7 +65,7 @@ public class Main {
 
         // maxNumUnaryPositiveAtoms
         option = new Option("nupa", "max_num_unary_pos_atom", true, "Maximum number of unary positive atoms (default:" +
-                " 1)");
+                " 0)");
         option.setRequired(false);
         options.addOption(option);
 
@@ -92,6 +92,12 @@ public class Main {
         option.setRequired(false);
         options.addOption(option);
 
+        // maxNumInstantiatedExceptionAtoms
+        option = new Option("nina", "max_num_inst_neg_atom", true, "Maximum number of instantiated exception atoms " +
+                "(default: 0)");
+        option.setRequired(false);
+        options.addOption(option);
+
         // maxUniquePredicateOccurrence
         option = new Option("nupo", "max_num_uniq_pred_occur", true, "Maximum number of occurrence of each unique " +
                 "predicate (default: 2)");
@@ -104,7 +110,7 @@ public class Main {
         options.addOption(option);
 
         // minExceptionCoverage
-        option = new Option("ec", "min_ec", true, "Minimum exception coverage of adding exception atom (default: 0.2)");
+        option = new Option("ec", "min_ec", true, "Minimum exception coverage of adding exception atom (default: 0.1)");
         option.setRequired(false);
         options.addOption(option);
 
@@ -127,7 +133,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-//        args = "-w ../data/imdb -em transe -o tmp -na 3 -ew 0 -ms 2 -nupa 0 -nna 1".split("\\s++");
+//        args = "-w ../data/imdb -em transe -o tmp -na 3 -ew 0 -ms 2 -nna 1 -nina 0".split("\\s++");
         MinerConfig config = new MinerConfig();
 
         // Get config.
@@ -175,6 +181,10 @@ public class Main {
         ov = cmd.getOptionValue("nbna");
         if (ov != null) {
             config.maxNumBinaryExceptionAtoms = Integer.parseInt(ov);
+        }
+        ov = cmd.getOptionValue("nina");
+        if (ov != null) {
+            config.maxNumInstantiatedExceptionAtoms = Integer.parseInt(ov);
         }
         ov = cmd.getOptionValue("nupo");
         if (ov != null) {

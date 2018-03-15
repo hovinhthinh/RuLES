@@ -15,18 +15,19 @@ public class MinerConfig {
     // degree.
 
     public int maxNumAtoms = 4;
-    public int maxNumUnaryPositiveAtoms = 1;
+    public int maxNumUnaryPositiveAtoms = 0;
     public int maxNumBinaryPositiveAtoms = INF;
     public int maxNumExceptionAtoms = 1;
     public int maxNumUnaryExceptionAtoms = 1;
     public int maxNumBinaryExceptionAtoms = 1;
+    public int maxNumInstantiatedExceptionAtoms = 0;
     public int maxUniquePredicateOccurrence = 2;
     public double minConf = 0.1;
     public int minSupport = 2;
 
     // Content prune options.
     public double minHeadCoverage = 0.01;
-    public double minExceptionCoverage = 0.2;
+    public double minExceptionCoverage = 0.1;
 
     // Mining options.
     public int enqueueLimit = 100000000;
@@ -51,6 +52,7 @@ public class MinerConfig {
         System.out.println("maxNumExceptionAtoms=" + maxNumExceptionAtoms);
         System.out.println("maxNumUnaryExceptionAtoms=" + maxNumUnaryExceptionAtoms);
         System.out.println("maxNumBinaryExceptionAtoms=" + maxNumBinaryExceptionAtoms);
+        System.out.println("maxNumInstantiatedExceptionAtoms=" + maxNumInstantiatedExceptionAtoms);
         System.out.println("maxUniquePredicateOccurrence=" + maxUniquePredicateOccurrence);
         System.out.println("minHeadCoverage=" + minHeadCoverage);
         System.out.println("minExceptionCoverage=" + minExceptionCoverage);

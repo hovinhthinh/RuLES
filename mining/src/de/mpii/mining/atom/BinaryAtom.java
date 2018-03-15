@@ -2,6 +2,7 @@ package de.mpii.mining.atom;
 
 /**
  * Created by hovinhthinh on 11/13/17.
+ * Binary atoms (between 2 variables)
  */
 public class BinaryAtom extends Atom {
     public int oid;

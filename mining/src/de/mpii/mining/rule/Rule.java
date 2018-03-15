@@ -2,6 +2,7 @@ package de.mpii.mining.rule;
 
 import de.mpii.mining.atom.Atom;
 import de.mpii.mining.atom.BinaryAtom;
+import de.mpii.mining.atom.InstantiatedAtom;
 import de.mpii.mining.atom.UnaryAtom;
 
 import java.util.ArrayList;
@@ -15,6 +16,8 @@ public class Rule {
     private static final long V_POW[] = new long[10];
     private static final long NEGATION_SIGN = 999983;
     private static final long UNARY_SIGN = 15485863;
+    private static final long INSTANTIATED_SIGN = 10000033;
+    private static final long REVERSED_SIGN = 1000003;
 
     static {
         E_POW[0] = 1;
@@ -26,6 +29,7 @@ public class Rule {
         for (int i = 1; i < R_POW.length; ++i) {
             R_POW[i] = R_POW[i - 1] * 1000000009;
         }
+
         for (int i = 1; i < V_POW.length; ++i) {
             V_POW[i] = V_POW[i - 1] * 11;
         }
@@ -101,8 +105,29 @@ public class Rule {
         return num;
     }
 
+    public int getNumInstantiatedPositiveAtoms() {
+        int num = 0;
+        for (Atom a : atoms) {
+            if (!a.negated && (a instanceof InstantiatedAtom)) {
+                ++num;
+            }
+        }
+        return num;
+    }
+
+    public int getNumInstantiatedExceptionAtoms() {
+        int num = 0;
+        for (Atom a : atoms) {
+            if (a.negated && (a instanceof InstantiatedAtom)) {
+                ++num;
+            }
+        }
+        return num;
+    }
+
     // Type of last atom:
-    // empty: -1 -> dangling(0) -> binary closed(1) -> unary closed(2) -> unary exception(3) -> binary exception(4).
+    // empty: -1 -> dangling(0) -> binary closed(1) -> unary closed(2) -> unary/instance exception(3) -> binary
+    // exception(4).
     public int getState() {
         if (atoms.size() == 0) {
             return -1;
@@ -113,16 +138,15 @@ public class Rule {
         } else if (!a.negated) {
             return (a instanceof BinaryAtom) ? 1 : 2;
         } else {
-            return (a instanceof UnaryAtom) ? 3 : 4;
+            return (a instanceof BinaryAtom) ? 4 : 3;
         }
     }
 
     public int getMaxVariableDegree() {
         int[] deg = new int[nVariables];
         for (Atom a : atoms) {
-            if (a instanceof UnaryAtom) {
-                UnaryAtom atom = (UnaryAtom) a;
-                ++deg[atom.sid];
+            if (a instanceof UnaryAtom || a instanceof InstantiatedAtom) {
+                ++deg[a.sid];
             } else {
                 BinaryAtom atom = (BinaryAtom) a;
                 ++deg[atom.sid];
@@ -158,7 +182,7 @@ public class Rule {
             dad[i] = -1;
         }
         for (int i = 1; i < atoms.size(); ++i) {
-            if (atoms.get(i).negated || (atoms.get(i) instanceof UnaryAtom)) {
+            if (atoms.get(i).negated || (atoms.get(i) instanceof UnaryAtom) || (atoms.get(i) instanceof InstantiatedAtom)) {
                 continue;
             }
             BinaryAtom a = (BinaryAtom) atoms.get(i);
@@ -193,7 +217,7 @@ public class Rule {
         }
         int[] deg = new int[nVariables];
         for (Atom a : atoms) {
-            if (a.negated || (a instanceof UnaryAtom)) {
+            if (a.negated || (a instanceof UnaryAtom) || (a instanceof InstantiatedAtom)) {
                 continue;
             }
             BinaryAtom atom = (BinaryAtom) a;
@@ -221,9 +245,8 @@ public class Rule {
             if (a.negated) {
                 continue;
             }
-            if (a instanceof UnaryAtom) {
-                UnaryAtom atom = (UnaryAtom) a;
-                ++deg[atom.sid];
+            if (a instanceof UnaryAtom || a instanceof InstantiatedAtom) {
+                ++deg[a.sid];
             } else {
                 BinaryAtom atom = (BinaryAtom) a;
                 ++deg[atom.sid];
@@ -292,6 +315,22 @@ public class Rule {
             }
             ++r.nVariables;
         }
+        return r;
+    }
+
+    // Return null if the atom is already added in either negated or non-negated version.
+    // If negated is true, this is actually exception atom.
+    public Rule addClosingInstantiatedAtom(int sid, int pid, int value, boolean negated, boolean reversed) {
+        Rule r = this.cloneRule();
+        for (Atom a : r.atoms) {
+            if (a instanceof InstantiatedAtom) {
+                InstantiatedAtom atom = (InstantiatedAtom) a;
+                if (atom.sid == sid && atom.pid == pid && atom.value == value) {
+                    return null;
+                }
+            }
+        }
+        r.atoms.add(new InstantiatedAtom(false, negated, reversed, sid, pid, value));
         return r;
     }
 
@@ -392,6 +431,12 @@ public class Rule {
                     if (mapping[a.sid] != i) {
                         continue;
                     }
+                    if (a instanceof InstantiatedAtom) {
+                        InstantiatedAtom atom = (InstantiatedAtom) a;
+                        varCode += R_POW[atom.pid] * E_POW[atom.value] * INSTANTIATED_SIGN * (atom.negated ?
+                                NEGATION_SIGN : 1) * (atom
+                                .reversed ? REVERSED_SIGN : 1);
+                    } else
                     if (a instanceof UnaryAtom) {
                         UnaryAtom atom = (UnaryAtom) a;
                         varCode += R_POW[atom.pid] * UNARY_SIGN * (atom.negated ? NEGATION_SIGN : 1);
@@ -409,8 +454,19 @@ public class Rule {
     }
 
 
-    private String getAtomString(Atom a, String[] relationsString, String[] typesString) {
-        if (a instanceof UnaryAtom) {
+    private String getAtomString(Atom a, String[] relationsString, String[] typesString, String[] entitiesString) {
+        if (a instanceof InstantiatedAtom) {
+            InstantiatedAtom atom = (InstantiatedAtom) a;
+            StringBuilder sb = new StringBuilder(atom.negated ? "not " : "");
+            if (atom.reversed) {
+                sb.append(relationsString[atom.pid]).append("(%").append(entitiesString[atom.value])
+                        .append("%, V").append(atom.sid).append(")");
+            } else {
+                sb.append(relationsString[atom.pid]).append("(V").append(atom.sid).append(", %")
+                        .append(entitiesString[atom.value]).append("%)");
+            }
+            return sb.toString();
+        } else if (a instanceof UnaryAtom) {
             UnaryAtom atom = (UnaryAtom) a;
             StringBuilder sb = new StringBuilder(atom.negated ? "not " : "");
             sb.append(typesString[atom.pid]).append("(V").append(atom.sid).append(")");
@@ -419,7 +475,7 @@ public class Rule {
             BinaryAtom atom = (BinaryAtom) a;
             StringBuilder sb = new StringBuilder(atom.negated ? "not " : "");
             if (atom.pid < 0) { // This is never executed. atom.pid is always >= 0.
-                sb.append(relationsString[-1-atom.pid]).append("(V").append(atom.oid).append
+                sb.append(relationsString[-1 - atom.pid]).append("(V").append(atom.oid).append
                         (", V").append
                         (atom.sid).append
                         (")");
@@ -433,35 +489,38 @@ public class Rule {
         }
     }
 
-    public String getString(String[] relationsString, String[] typesString) {
+    public String getString(String[] relationsString, String[] typesString, String[] entitiesString) {
         if (atoms.size() == 0) {
             return null;
         }
-        StringBuilder sb = new StringBuilder(getAtomString(atoms.get(0), relationsString, typesString)).append(" :- ");
+        StringBuilder sb = new StringBuilder(getAtomString(atoms.get(0), relationsString, typesString, entitiesString)).append(" " +
+                ":- ");
         for (int i = 1; i < atoms.size(); ++i) {
             if (i > 1) {
                 sb.append(", ");
             }
-            sb.append(getAtomString(atoms.get(i), relationsString, typesString));
+            sb.append(getAtomString(atoms.get(i), relationsString, typesString, entitiesString));
         }
         return sb.toString().trim();
     }
 
-    public String getDisjunctionString(int pid1, int pid2, String[] relationsString, String[] typesString) {
+    public String getDisjunctionString(int pid1, int pid2, String[] relationsString, String[] typesString, String[]
+            entitiesString) {
         if (atoms.size() == 0) {
             return null;
         }
         int oldPid = atoms.get(0).pid;
         atoms.get(0).pid = pid1;
-        StringBuilder sb = new StringBuilder(getAtomString(atoms.get(0), relationsString, typesString)).append(" OR ");
+        StringBuilder sb = new StringBuilder(getAtomString(atoms.get(0), relationsString, typesString, entitiesString)).append(" " +
+                "OR ");
         atoms.get(0).pid = pid2;
-        sb.append(getAtomString(atoms.get(0), relationsString, typesString)).append(" :- ");
+        sb.append(getAtomString(atoms.get(0), relationsString, typesString, entitiesString)).append(" :- ");
         atoms.get(0).pid = oldPid;
         for (int i = 1; i < atoms.size(); ++i) {
             if (i > 1) {
                 sb.append(", ");
             }
-            sb.append(getAtomString(atoms.get(i), relationsString, typesString));
+            sb.append(getAtomString(atoms.get(i), relationsString, typesString, entitiesString));
         }
         return sb.toString().trim();
     }
