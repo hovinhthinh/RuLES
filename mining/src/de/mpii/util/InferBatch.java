@@ -58,6 +58,7 @@ public class InferBatch {
 
         double[][] econf = new double[weights.length][stats.size() / range];
 
+        Collections.shuffle(stats);
         for (int k = 0; k < weights.length; ++k) {
             Collections.sort(stats, new CompareF(weights[k]));
             double avg = 0;
@@ -122,7 +123,6 @@ public class InferBatch {
                     .parseDouble(arr[4]), quality, Double.parseDouble(arr[5])));
         }
         in.close();
-        Collections.shuffle(stats);
         //
         double[] weights = new double[11];
         for (int i = 0; i < 11; ++i) {
