@@ -89,7 +89,7 @@ public class InferBatch {
 //        args = "../data/fb15k-new/ ../data/fb15k-new/amie.xyz.hole.sp10 10 ../data/fb15k-new/amie.xyz.hole.sp10.txt"
 //                .split
 //                ("\\s++");
-        knowledgeGraph = new KnowledgeGraph(args[0]);
+        Infer.knowledgeGraph = knowledgeGraph = new KnowledgeGraph(args[0]);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(args[1])));
         String line;
