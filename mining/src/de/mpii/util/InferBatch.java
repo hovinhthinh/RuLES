@@ -57,9 +57,9 @@ public class InferBatch {
         PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile))));
 
         double[][] econf = new double[weights.length][stats.size() / range];
-
-        Collections.shuffle(stats);
+        
         for (int k = 0; k < weights.length; ++k) {
+            Collections.shuffle(stats);
             Collections.sort(stats, new CompareF(weights[k]));
             double avg = 0;
             for (int i = 0; i < stats.size(); ++i) {
