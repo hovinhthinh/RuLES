@@ -72,7 +72,7 @@ public class InferBatch {
         }
         out.print("ew");
         for (double w : weights) {
-            out.printf("\t%.1f", w);
+            out.printf("\t%.3f", w);
         }
         out.print("\n");
         for (int k = 0; k < stats.size() / range; ++k) {
@@ -137,7 +137,7 @@ public class InferBatch {
         }
         process(args[3] + ".pca.txt", weights, stats, range);
         //
-        weights = new double[]{0, 0.2, 0.4, 0.6, 0.8, 0.9, 0.925, 0.95, 0.975, 1};
+        weights = new double[]{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.925, 0.95, 0.975, 1};
         for (RuleStats s : stats) {
             s.chosenMetric = s.conv;
         }
