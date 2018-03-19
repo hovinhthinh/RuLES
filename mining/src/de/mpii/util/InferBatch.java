@@ -21,19 +21,23 @@ public class InferBatch {
 
 
     static class RuleStats {
-        String rule;
+        public String rule;
         public double pcaconf;
         public double conf;
         public double mmr;
         public double quality;
+        public double conv;
 
-        public RuleStats(String rule, double pcaconf, double conf, double mmr, double quality) {
+        public RuleStats(String rule, double pcaconf, double conf, double mmr, double quality, double conv) {
             this.rule = rule;
             this.pcaconf = pcaconf;
             this.conf = conf;
             this.mmr = mmr;
             this.quality = quality;
+            this.conv = conv;
         }
+
+        public double chosenMetric;
     }
 
     static class CompareF implements Comparator<RuleStats> {
@@ -45,8 +49,39 @@ public class InferBatch {
 
         @Override
         public int compare(RuleStats o1, RuleStats o2) {
-            return Double.compare(o2.conf * (1 - lambda) + o2.mmr * lambda, o1.conf * (1 - lambda) + o1.mmr * lambda);
+            return Double.compare(o2.chosenMetric * (1 - lambda) + o2.mmr * lambda, o1.chosenMetric * (1 - lambda) + o1.mmr * lambda);
         }
+    }
+
+    public static void process(String outputFile, double[] weights, ArrayList<RuleStats> stats, int range) throws Exception {
+        PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile))));
+
+        double[][] econf = new double[weights.length][stats.size() / range];
+
+        for (int k = 0; k < weights.length; ++k) {
+            Collections.sort(stats, new CompareF(weights[k]));
+            double avg = 0;
+            for (int i = 0; i < stats.size(); ++i) {
+                avg += stats.get(i).quality;
+                if (i % range == range - 1) {
+                    econf[k][i / range] = avg / (i + 1);
+                }
+            }
+
+        }
+        out.print("ew");
+        for (double w : weights) {
+            out.printf("\t%.1f", w);
+        }
+        out.print("\n");
+        for (int k = 0; k < stats.size() / range; ++k) {
+            out.printf("top_%d", (k + 1) * range);
+            for (int i = 0; i < weights.length; ++i) {
+                out.printf("\t%.3f", econf[i][k]);
+            }
+            out.print("\n");
+        }
+        out.close();
     }
 
     // args: <workspace> <file> <range> <output>
@@ -57,10 +92,10 @@ public class InferBatch {
         knowledgeGraph = new KnowledgeGraph(args[0]);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(args[1])));
-        PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(args[3]))));
         String line;
         ArrayList<RuleStats> stats = new ArrayList<>();
         int range = Integer.parseInt(args[2]);
+
         while ((line = in.readLine()) != null) {
             if (line.isEmpty()) {
                 break;
@@ -84,47 +119,28 @@ public class InferBatch {
             }
             double quality = ((double) localNumTrue) / localPredict;
             stats.add(new RuleStats(arr[0], Double.parseDouble(arr[3]), Double.parseDouble(arr[2]), Double
-                    .parseDouble(arr[4]), quality));
+                    .parseDouble(arr[4]), quality, Double.parseDouble(arr[5])));
         }
         in.close();
-        //
-        double[] pca = new double[stats.size() / range];
-        double[][] econf = new double[11][stats.size() / range];
-
         Collections.shuffle(stats);
-        Collections.sort(stats, new Comparator<RuleStats>() {
-            @Override
-            public int compare(RuleStats o1, RuleStats o2) {
-                return Double.compare(o2.pcaconf, o1.pcaconf);
-            }
-        });
-        double avg = 0;
-        for (int i = 0; i < stats.size(); ++i) {
-            avg += stats.get(i).quality;
-            if (i % range == range - 1) {
-                pca[i / range] = avg / (i + 1);
-            }
+        //
+        double[] weights = new double[11];
+        for (int i = 0; i < 11; ++i) {
+            weights[i] = 0.1f * i;
         }
-        for (int k = 0; k < 11; ++k) {
-            Collections.sort(stats, new CompareF(k * 0.1));
-            avg = 0;
-            for (int i = 0; i < stats.size(); ++i) {
-                avg += stats.get(i).quality;
-                if (i % range == range - 1) {
-                    econf[k][i / range] = avg / (i + 1);
-                }
-            }
+        for (RuleStats s : stats) {
+            s.chosenMetric = s.conf;
         }
-
-        out.print("ew\t0\t0.1\t0.2\t0.3\t0.4\t0.5\t0.6\t0.7\t0" +
-                ".8\t0.9\t1.0\tpcaconf\n");
-        for (int k = 0; k < stats.size() / range; ++k) {
-            out.printf("top_%d\t", (k + 1) * range);
-            for (int i = 0; i < 11; ++i) {
-                out.printf("%.3f\t", econf[i][k]);
-            }
-            out.printf("%.3f\n", pca[k]);
+        process(args[3] + ".conf.txt", weights, stats, range);
+        for (RuleStats s : stats) {
+            s.chosenMetric = s.pcaconf;
         }
-        out.close();
+        process(args[3] + ".pca.txt", weights, stats, range);
+        //
+        weights = new double[]{0, 0.2, 0.4, 0.6, 0.8, 0.9, 0.925, 0.95, 0.975, 1};
+        for (RuleStats s : stats) {
+            s.chosenMetric = s.conv;
+        }
+        process(args[3] + ".conv.txt", weights, stats, range);
     }
 }

@@ -74,9 +74,9 @@ public class ComputeStats {
                 mrr /= totalUnknown;
                 double conf = ((double) sup) / instances.size();
                 double pcaconf = pcaBodySup == 0 ? 0 : ((double) sup) / pcaBodySup;
-
+                double conv = (1 - knowledgeGraph.rSupport[pid]) / (1 - conf);
                 synchronized (out) {
-                    out.printf("%s\t%d\t%.9f\t%.9f\t%.9f\n", front.second, sup, conf, pcaconf, mrr);
+                    out.printf("%s\t%d\t%.9f\t%.9f\t%.9f\t%.9f\n", front.second, sup, conf, pcaconf, mrr, conv);
                 }
             }
         }

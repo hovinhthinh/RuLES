@@ -27,6 +27,7 @@ public class KnowledgeGraph {
     public HashMap<Long, List<Integer>> soPidMap;
     public HashMap<Integer, Integer> maxVarPids;
     public HashSet<Integer>[] danglingPids;
+    public double[] rSupport;
 
     public HashMap<Integer, Integer> pid1Pid2Count, pid1Pid2CountReversed; // handle disjunction
 
@@ -46,6 +47,7 @@ public class KnowledgeGraph {
             types = new List[nEntities];
 
             pidSOInstances = new List[nRelations];
+            rSupport = new double[nRelations];
             typeInstances = new List[nTypes];
 
             trueTypes = new TypeEncodedSet();
@@ -126,6 +128,16 @@ public class KnowledgeGraph {
                 pidCount.put(s, pidCount.getOrDefault(s, 0) + 1);
                 pidCount = maxVarPidsTemp.get(-p - 1);
                 pidCount.put(o, pidCount.getOrDefault(o, 0) + 1);
+            }
+
+            // Calculate rSupport (used for computing conviction)
+            for (int i = 0; i < nRelations; ++i) {
+                HashSet<Integer> distinctS = new HashSet<>(), distinctO = new HashSet<>();
+                for (SOInstance so : pidSOInstances[i]) {
+                    distinctS.add(so.subject);
+                    distinctO.add(so.object);
+                }
+                rSupport[i] = ((double) pidSOInstances[i].size()) / distinctS.size() / distinctO.size();
             }
 
             pid1Pid2Count = new HashMap<>();
