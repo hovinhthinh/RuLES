@@ -201,13 +201,13 @@ public class Infer {
         }
     }
 
-    public static HashSet<SOInstance> matchRule(Rule r) {
+    public static HashSet<SOInstance> matchRule(Rule r, boolean sampling) {
         HashSet<SOInstance> headInstances = new HashSet<>();
         int[] variableValues = new int[r.nVariables];
         Arrays.fill(variableValues, -1);
         recur(r, 1, variableValues, headInstances);
 
-        if (headInstances.size() > RuleStats.HEAD_INSTANCE_BOUND) {
+        if (headInstances.size() > RuleStats.HEAD_INSTANCE_BOUND && sampling) {
             ArrayList<SOInstance> instances = new ArrayList<>(headInstances);
             Collections.shuffle(instances);
             headInstances.clear();
@@ -250,7 +250,7 @@ public class Infer {
             }
             ++ruleCount;
             LOGGER.info("Inferring rule: " + rule);
-            HashSet<SOInstance> instances = matchRule(r);
+            HashSet<SOInstance> instances = matchRule(r, false);
             System.out.println("body_support: " + instances.size());
             int pid = r.atoms.get(0).pid;
             int localNumTrue = 0;

@@ -117,7 +117,7 @@ public class InferBatch {
             String[] arr = line.split("\t");
             Rule r = Infer.parseRule(knowledgeGraph, arr[0]);
             LOGGER.info("Inferring rule: " + arr[0]);
-            HashSet<SOInstance> instances = Infer.matchRule(r);
+            HashSet<SOInstance> instances = Infer.matchRule(r, false);
             int pid = r.atoms.get(0).pid;
             int localNumTrue = 0;
             int localPredict = 0;
