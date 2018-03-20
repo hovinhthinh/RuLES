@@ -64,9 +64,6 @@ public class Miner implements Runnable {
     }
 
     private void recur(Rule rule, int position, int variableValues[], RuleStats stats) {
-        if (stats.headInstances.size() >= RuleStats.HEAD_INSTANCE_BOUND) {
-            return;
-        }
         if (position == rule.atoms.size()) {
             rule.extensible = true;
             if (rule.closed) {
@@ -236,6 +233,14 @@ public class Miner implements Runnable {
         r.extensionInfo = new RuleExtensionInfo(r.nVariables);
         recur(r, 1, variableValues, stats);
 
+        if (stats.headInstances.size() > RuleStats.HEAD_INSTANCE_BOUND) {
+            ArrayList<SOInstance> instances = new ArrayList<>(stats.headInstances);
+            Collections.shuffle(instances);
+            stats.headInstances.clear();
+            for (int i = 0; i < RuleStats.HEAD_INSTANCE_BOUND; ++i) {
+                stats.headInstances.add(instances.get(i));
+            }
+        }
 
         // If the monotonic part is closed, then set stats.
         if (r.closed) {

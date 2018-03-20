@@ -6,6 +6,7 @@ import de.mpii.mining.atom.InstantiatedAtom;
 import de.mpii.mining.atom.UnaryAtom;
 import de.mpii.mining.graph.KnowledgeGraph;
 import de.mpii.mining.rule.Rule;
+import de.mpii.mining.rule.RuleStats;
 import de.mpii.mining.rule.SOInstance;
 
 import java.io.*;
@@ -205,6 +206,16 @@ public class Infer {
         int[] variableValues = new int[r.nVariables];
         Arrays.fill(variableValues, -1);
         recur(r, 1, variableValues, headInstances);
+
+        if (headInstances.size() > RuleStats.HEAD_INSTANCE_BOUND) {
+            ArrayList<SOInstance> instances = new ArrayList<>(headInstances);
+            Collections.shuffle(instances);
+            headInstances.clear();
+            for (int i = 0; i < RuleStats.HEAD_INSTANCE_BOUND; ++i) {
+                headInstances.add(instances.get(i));
+            }
+        }
+
         return headInstances;
     }
 
