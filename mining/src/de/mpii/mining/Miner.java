@@ -290,17 +290,19 @@ public class Miner implements Runnable {
                     for (int pid = 0; pid < knowledgeGraph.nRelations; ++pid) {
                         if (r.stats.scr[pid] != -1) {
                             r.atoms.get(0).pid = pid;
-                            System.out.printf("%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\tsup:\t%d\tec:\t%" +
-                                            ".3f\n", r.getString(knowledgeGraph.relationsString, knowledgeGraph
-                                            .typesString, knowledgeGraph.entitiesString),
-                                    r.stats.headCoverage[pid], config.usePCAConf ? "pca" : "", r.stats.confidence[pid],
-                                    r.stats.mrr[pid], r.stats.scr[pid], r.stats.ruleSupport[pid], r.stats.ec[pid]);
+                            String result = String.format(
+                                    "%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\tsup:\t%d\tec:\t%.3f",
+                                    r.getString(knowledgeGraph.relationsString, knowledgeGraph.typesString, knowledgeGraph.entitiesString),
+                                    r.stats.headCoverage[pid],
+                                    config.usePCAConf ? "pca" : "",
+                                    r.stats.confidence[pid],
+                                    r.stats.mrr[pid],
+                                    r.stats.scr[pid],
+                                    r.stats.ruleSupport[pid],
+                                    r.stats.ec[pid]);
+                            System.out.println(result);
                             synchronized (output) {
-                                output.printf("%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\tsup:\t%d\tec:\t%" +
-                                                ".3f\n", r.getString(knowledgeGraph.relationsString, knowledgeGraph
-                                                .typesString, knowledgeGraph.entitiesString),
-                                        r.stats.headCoverage[pid], config.usePCAConf ? "pca" : "", r.stats.confidence[pid],
-                                        r.stats.mrr[pid], r.stats.scr[pid], r.stats.ruleSupport[pid], r.stats.ec[pid]);
+                                output.println(result);
                                 output.flush();
                             }
                         }
