@@ -9,11 +9,14 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.logging.Logger;
 
 /**
  * Created by hovinhthinh on 11/13/17.
  */
 public class Main {
+    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+
     private static Options getOptions() {
         Options options = new Options();
 
@@ -134,6 +137,8 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 //        args = "-w ../data/imdb -em transe -o tmp -na 3 -ew 0 -ms 2 -nna 1 -nina 0".split("\\s++");
+
+        long currentTime = System.currentTimeMillis();
         MinerConfig config = new MinerConfig();
 
         // Get config.
@@ -268,5 +273,7 @@ public class Main {
             }
         }
         out.close();
+
+        LOGGER.info("Total runtime: " + (System.currentTimeMillis() - currentTime + "ms"));
     }
 }
