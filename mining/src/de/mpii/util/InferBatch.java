@@ -5,10 +5,7 @@ import de.mpii.mining.rule.Rule;
 import de.mpii.mining.rule.SOInstance;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -53,19 +50,24 @@ public class InferBatch {
         }
     }
 
-    public static void process(String outputFile, double[] weights, ArrayList<RuleStats> stats, int range) throws Exception {
+    public static void process(String outputFile, double[] weights, ArrayList<RuleStats> stats, int[] range) throws
+            Exception {
         PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile))));
 
-        double[][] econf = new double[weights.length][stats.size() / range];
-        
+        HashMap<Integer, Integer> rangeMap = new HashMap<>();
+        for (int i = 0; i < range.length; ++i) {
+            rangeMap.put(range[i], i);
+        }
+        double[][] econf = new double[weights.length][range.length];
+
         for (int k = 0; k < weights.length; ++k) {
             Collections.shuffle(stats);
             Collections.sort(stats, new CompareF(weights[k]));
             double avg = 0;
             for (int i = 0; i < stats.size(); ++i) {
                 avg += stats.get(i).quality;
-                if (i % range == range - 1) {
-                    econf[k][i / range] = avg / (i + 1);
+                if (rangeMap.containsKey(i + 1)) {
+                    econf[k][rangeMap.get(i + 1)] = avg / (i + 1);
                 }
             }
 
@@ -75,8 +77,8 @@ public class InferBatch {
             out.printf("\t%.3f", w);
         }
         out.print("\n");
-        for (int k = 0; k < stats.size() / range; ++k) {
-            out.printf("top_%d", (k + 1) * range);
+        for (int k = 0; k < range.length; ++k) {
+            out.printf("top_%d", range[k]);
             for (int i = 0; i < weights.length; ++i) {
                 out.printf("\t%.3f", econf[i][k]);
             }
@@ -87,7 +89,8 @@ public class InferBatch {
 
     // args: <workspace> <file> <range> <output>
     public static void main(String[] args) throws Exception {
-//        args = "../data/fb15k-new/ ../data/fb15k-new/amie.xyz.hole.sp10 10 ../data/fb15k-new/amie.xyz.hole.sp10.txt"
+//        args = "../data/fb15k-new/ ../data/fb15k-new/amie.xyz.hole.sp10 10,20,30 ../data/fb15k-new/amie.xyz.hole.sp10
+// .txt"
 //                .split
 //                ("\\s++");
         Infer.knowledgeGraph = knowledgeGraph = new KnowledgeGraph(args[0]);
@@ -95,7 +98,17 @@ public class InferBatch {
         BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(args[1])));
         String line;
         ArrayList<RuleStats> stats = new ArrayList<>();
-        int range = Integer.parseInt(args[2]);
+        int[] range;
+        if (args[2].contains(",")) {
+            String[] x = args[2].split(",");
+            range = new int[x.length];
+            for (int i = 0; i < range.length; ++i) {
+                range[i] = Integer.parseInt(x[i]);
+            }
+        } else {
+            range = new int[]{Integer.parseInt(args[2])};
+        }
+
 
         while ((line = in.readLine()) != null) {
             if (line.isEmpty()) {
