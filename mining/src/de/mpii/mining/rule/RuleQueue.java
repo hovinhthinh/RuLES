@@ -77,16 +77,8 @@ public class RuleQueue {
                 LOGGER.info("RuleBodyQueueSize: " + rulesQueue.size());
             }
             // Wait for 10 min before returning.
-            synchronized (rulesQueue) {
-                Rule front = rulesQueue.poll(600, TimeUnit.SECONDS);
-                if (front != null) {
-                    if (front.atoms.size() > currentNumAtom) {
-                        enqueuedRuleCode.clear();
-                        currentNumAtom = front.atoms.size();
-                    }
-                }
-                return front;
-            }
+            Rule front = rulesQueue.poll(600, TimeUnit.SECONDS);
+            return front;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
