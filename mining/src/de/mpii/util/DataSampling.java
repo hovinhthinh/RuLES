@@ -34,7 +34,7 @@ public class DataSampling {
         }
         ArrayList<String[]> good = new ArrayList<>();
         for (String[] s : input) {
-            if (e2deg.get(s[0]) == 1 || e2deg.get(s[2]) == 1) {
+            if (e2deg.get(s[0]) <= 1 || e2deg.get(s[2]) <= 1) {
                 continue;
             }
             good.add(s);
@@ -107,10 +107,14 @@ public class DataSampling {
             chosenPred.add(topPreds.get(i).getKey());
         }
 
+        Set<String> ignorePred = new HashSet<>(
+//                Arrays.asList("ON", "has", "IN", "OF", "with", "behind", "near",
+//                        "WEARING", "next to", "on top of")
+        );
         ArrayList<String[]> good = new ArrayList<>();
         for (String l : input) {
             String[] pred = l.split("\t");
-            if (chosenPred.contains(pred[1]) && !pred[0].equals(pred[2])) {
+            if (chosenPred.contains(pred[1]) && !pred[0].equals(pred[2]) && !ignorePred.contains(pred[1])) {
                 good.add(pred);
             }
         }
@@ -118,7 +122,7 @@ public class DataSampling {
         int rm_1 = Integer.parseInt(args[2]);
         for (int i = 0; i < rm_1; ++i) {
             ArrayList<String[]> filtered = filter_1(good);
-            if (good.size() != filtered.size()) {
+            if (good.size() == filtered.size()) {
                 System.out.println("Cannot filter more.");
                 break;
             }
