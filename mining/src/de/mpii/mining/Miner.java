@@ -219,6 +219,19 @@ public class Miner implements Runnable {
         }
     }
 
+    public static ArrayList<SOInstance> samplingSOHeadInstances(ArrayList<SOInstance> instances) {
+        if (instances.size() > RuleStats.HEAD_INSTANCE_BOUND) {
+            Collections.shuffle(instances);
+            ArrayList<SOInstance> result = new ArrayList<>();
+            for (int i = 0; i < RuleStats.HEAD_INSTANCE_BOUND; ++i) {
+                result.add(instances.get(i));
+            }
+            return result;
+        } else {
+            return instances;
+        }
+    }
+
     // Process and fill the 'stats'. If after matching, stats is still null, then it is not processed, scr should be
     // consider as infinity.
     public void matchRule(Rule r) {
@@ -232,15 +245,6 @@ public class Miner implements Runnable {
         RuleStats stats = new RuleStats(r.sourceScr);
         r.extensionInfo = new RuleExtensionInfo(r.nVariables);
         recur(r, 1, variableValues, stats);
-
-        if (stats.headInstances.size() > RuleStats.HEAD_INSTANCE_BOUND) {
-            ArrayList<SOInstance> instances = new ArrayList<>(stats.headInstances);
-            Collections.shuffle(instances);
-            stats.headInstances.clear();
-            for (int i = 0; i < RuleStats.HEAD_INSTANCE_BOUND; ++i) {
-                stats.headInstances.add(instances.get(i));
-            }
-        }
 
         // If the monotonic part is closed, then set stats.
         if (r.closed) {

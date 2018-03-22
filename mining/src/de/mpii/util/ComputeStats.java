@@ -4,6 +4,7 @@ import de.mpii.embedding.EmbeddingClient;
 import de.mpii.embedding.HolEClient;
 import de.mpii.embedding.SSPClient;
 import de.mpii.embedding.TransEClient;
+import de.mpii.mining.Miner;
 import de.mpii.mining.graph.KnowledgeGraph;
 import de.mpii.mining.rule.Rule;
 import de.mpii.mining.rule.SOInstance;
@@ -45,17 +46,16 @@ public class ComputeStats {
                     return;
                 }
                 Rule r = front.first;
-                HashSet<SOInstance> instances = Infer.matchRule(r, true);
+                HashSet<SOInstance> instances = Infer.matchRule(r);
                 int pid = r.atoms.get(0).pid;
-                int totalUnknown = 0;
                 double mrr = 0;
                 int sup = 0;
                 int pcaBodySup = 0;
                 HashSet<Integer> goodS = new HashSet<>();
+                ArrayList<SOInstance> unknownFacts = new ArrayList<>();
                 for (SOInstance so : instances) {
                     if (!knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {
-                        totalUnknown++;
-                        mrr += client.getInvertedRank(so.subject, pid, so.object);
+                        unknownFacts.add(so);
                     } else {
                         ++sup;
                         goodS.add(so.subject);
@@ -66,15 +66,20 @@ public class ComputeStats {
                         ++pcaBodySup;
                     }
                 }
-                if (totalUnknown == 0 || instances.size() == 0) {
+                if (unknownFacts.size() == 0 || instances.size() == 0) {
                     continue;
                 }
-                mrr /= totalUnknown;
+                unknownFacts = Miner.samplingSOHeadInstances(unknownFacts);
+                for (SOInstance so : unknownFacts) {
+                    mrr += client.getInvertedRank(so.subject, pid, so.object);
+                }
+                mrr /= unknownFacts.size();
                 double conf = ((double) sup) / instances.size();
                 double pcaconf = pcaBodySup == 0 ? 0 : ((double) sup) / pcaBodySup;
                 double conv = (1 - knowledgeGraph.rSupport[pid]) / (1 - conf);
+                double hc = knowledgeGraph.pidSOInstances[pid].size() == 0 ? 0 : ((double) sup) / knowledgeGraph.pidSOInstances[pid].size();
                 synchronized (out) {
-                    out.printf("%s\t%d\t%.9f\t%.9f\t%.9f\t%.9f\n", front.second, sup, conf, pcaconf, mrr, conv);
+                    out.printf("%s\t%d\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\n", front.second, sup, conf, pcaconf, mrr, conv, hc);
                 }
             }
         }

@@ -1,13 +1,11 @@
 package de.mpii.mining.rule;
 
 import de.mpii.embedding.EmbeddingClient;
+import de.mpii.mining.Miner;
 import de.mpii.mining.MinerConfig;
 import de.mpii.mining.graph.KnowledgeGraph;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by hovinhthinh on 11/14/17.
@@ -31,7 +29,7 @@ public class RuleStats {
     }
 
     // TODO: disable this bound.
-    public static final int HEAD_INSTANCE_BOUND = 10000;
+    public static final int HEAD_INSTANCE_BOUND = 1000;
 
     public int ruleSupport[], bodySupport;
     public double[] headCoverage, confidence, mrr, scr, ec;
@@ -65,6 +63,7 @@ public class RuleStats {
                 scr[pid] = -1;
             } else {
                 HashSet<Integer> goodS = null;
+                ArrayList<SOInstance> unknownFacts = new ArrayList<>();
                 for (SOInstance h : headInstances) {
                     if (graph.trueFacts.containFact(h.subject, pid, h.object)) {
                         ++ruleSupport[pid];
@@ -74,8 +73,13 @@ public class RuleStats {
                             }
                             goodS.add(h.subject);
                         }
+                    } else {
+                        if (config.embeddingWeight > 0) {
+                            unknownFacts.add(h);
+                        }
                     }
                 }
+                unknownFacts = Miner.samplingSOHeadInstances(unknownFacts);
                 if (config.usePCAConf) {
                     int pcaBodySupport = 0;
                     for (SOInstance h : headInstances) {
@@ -103,12 +107,10 @@ public class RuleStats {
                         if (config.embeddingWeight > 0) {
                             // Use MRR.
                             mrr[pid] = 0;
-                            for (SOInstance h : headInstances) {
-                                if (!graph.trueFacts.containFact(h.subject, pid, h.object)) {
-                                    mrr[pid] += embeddingClient.getInvertedRank(h.subject, pid, h.object);
-                                }
+                            for (SOInstance h : unknownFacts) {
+                                mrr[pid] += embeddingClient.getInvertedRank(h.subject, pid, h.object);
                             }
-                            mrr[pid] /= (bodySupport - ruleSupport[pid]);
+                            mrr[pid] /= unknownFacts.size();
                             scr[pid] += mrr[pid] * config.embeddingWeight;
                         }
                     }
