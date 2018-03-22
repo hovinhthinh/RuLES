@@ -9,17 +9,22 @@ import java.util.HashMap;
 public class TrainingGen {
     public static double TRAINING_RATE = 0.8;
 
-    // args: <workspace>
+    // args: <workspace> <sample_globally>
     public static void main(String[] args) throws Exception {
-//        args = new String[] {"../data/wn18"};
+//        args = new String[]{"../data/wn18", "true"};
         HashMap<String, ArrayList<String>> map = new HashMap<>();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(new File(args[0]
                 + "/ideal.data.txt"))));
         String line;
+        boolean global = args[1].equalsIgnoreCase("true") ? true : false;
+        System.out.println("Globally sampling: " + global);
         while ((line = in.readLine()) != null) {
             if (line.isEmpty()) continue;
             String predicate = line.split("\t")[1];
+            if (global) {
+                predicate = "GLOBAL";
+            }
             if (!map.containsKey(predicate)) {
                 map.put(predicate, new ArrayList<String>());
             }
