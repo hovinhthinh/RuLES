@@ -11,13 +11,14 @@ public class TrainingGen {
 
     // args: <workspace> <sample_globally>
     public static void main(String[] args) throws Exception {
-//        args = new String[]{"../data/wn18", "true"};
+//        args = new String[]{"../data/wn18", "0.8", "true"};
         HashMap<String, ArrayList<String>> map = new HashMap<>();
 
         BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(new File(args[0]
                 + "/ideal.data.txt"))));
+        TRAINING_RATE = Double.parseDouble(args[1]);
         String line;
-        boolean global = args[1].equalsIgnoreCase("true") ? true : false;
+        boolean global = args[2].equalsIgnoreCase("true") ? true : false;
         System.out.println("Globally sampling: " + global);
         while ((line = in.readLine()) != null) {
             if (line.isEmpty()) continue;

@@ -49,8 +49,8 @@ in which, `<entity>` shouldn't have any space in between.
 We prepared the workspace for IMDB dataset at `./data/imdb/`, and FB15K(with entities description) at `./data/fb15k/`
 ### 2. Generate training and test set
 ```
-$ bash gen_data.sh <workspace>
-# Ex: $ bash gen_data.sh ./data/imdb/
+$ bash gen_data.sh <workspace> <training_ratio>
+# Ex: $ bash gen_data.sh ./data/imdb/ 0.8
 ```
 ### 3. Train the embedding model
 We can choose run each of these models:
