@@ -220,10 +220,10 @@ public class Miner implements Runnable {
     }
 
     public static ArrayList<SOInstance> samplingSOHeadInstances(ArrayList<SOInstance> instances) {
-        if (instances.size() > RuleStats.HEAD_INSTANCE_BOUND) {
+        if (instances.size() > RuleStats.MRR_SAMPLE_SIZE) {
             Collections.shuffle(instances);
             ArrayList<SOInstance> result = new ArrayList<>();
-            for (int i = 0; i < RuleStats.HEAD_INSTANCE_BOUND; ++i) {
+            for (int i = 0; i < RuleStats.MRR_SAMPLE_SIZE; ++i) {
                 result.add(instances.get(i));
             }
             return result;
