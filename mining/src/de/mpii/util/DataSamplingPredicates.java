@@ -6,7 +6,7 @@ import java.util.*;
 /**
  * Created by hovinhthinh on 3/21/18.
  */
-public class DataSampling {
+public class DataSamplingPredicates {
     public static ArrayList<String> readlines(String file) {
         try {
             ArrayList<String> l = new ArrayList<>();
