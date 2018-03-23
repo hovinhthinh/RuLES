@@ -29,7 +29,7 @@ public class RuleStats {
     }
 
     // TODO: disable this bound.
-    public static final int HEAD_INSTANCE_BOUND = 1000;
+    public static final int MRR_SAMPLE_SIZE = 200;
 
     public int ruleSupport[], bodySupport;
     public double[] headCoverage, confidence, mrr, scr, ec;
