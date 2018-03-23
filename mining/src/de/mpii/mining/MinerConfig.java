@@ -33,6 +33,7 @@ public class MinerConfig {
     public int enqueueLimit = 100000000;
     public int numWorkers = 8;
     public boolean disjunction = false;
+    public boolean xyz = false;
 
     // Scoring options.
     public double embeddingWeight = 0.3;
@@ -60,6 +61,7 @@ public class MinerConfig {
         System.out.println("usePCAConf=" + usePCAConf);
         System.out.println("numWorkers=" + numWorkers);
         System.out.println("disjunction=" + disjunction);
+        System.out.println("xyz=" + xyz);
         System.out.println("-----------------------------------------");
         System.out.println("-----------------------------------------");
     }

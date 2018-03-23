@@ -110,7 +110,8 @@ usage: utility-name
  -em,--embedding_model <arg>             Embedding model ('transe'/'hole'/'ssp')
  -ew,--embedding_weight <arg>            Weight of embedding in score function (default: 0.3)
  -pca,--use_pca_conf                     Use pca confidence instead of standard confidence
- -dj,--disjunction                       Mine rule with disjunction in the head
+ -xyz,--mine_xyz                         Fix the form of positive parts to XYZ
+ -dj,--disjunction                       Mine rule with disjunction in the head (experimental)
  -nw,--num_workers <arg>                 Number of parallel workers (default: 8)
 ```
 It is recommended to extend the memory for java job with Xmx option depending on your machine. For example, following command will run the mining system with 100GB RAM.

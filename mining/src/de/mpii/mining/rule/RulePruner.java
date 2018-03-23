@@ -2,7 +2,6 @@ package de.mpii.mining.rule;
 
 import de.mpii.mining.MinerConfig;
 import de.mpii.mining.atom.BinaryAtom;
-import de.mpii.mining.atom.UnaryAtom;
 import de.mpii.mining.graph.KnowledgeGraph;
 
 import java.util.logging.Logger;
@@ -49,6 +48,13 @@ public class RulePruner {
                     return true;
                 }
             }
+        }
+
+        // pre-check if the rule cannot extend any more.
+        if (!r.isClosed() && r.getNumUnaryPositiveAtoms() >= config.maxNumUnaryPositiveAtoms && r
+                .getNumBinaryPositiveAtoms() >= config.maxNumBinaryPositiveAtoms) {
+            // TODO: add condition for instantiated positive atom when supported.
+            return true;
         }
 
         // Max variable degree.

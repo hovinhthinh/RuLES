@@ -334,6 +334,10 @@ public class Miner implements Runnable {
                     ruleQueue.enqueue(newR);
                 } else {
                     for (int v = 0; v < r.nVariables; ++v) {
+                        if (config.xyz && v > 0) {
+                            // only add dangling to 0
+                            continue;
+                        }
                         if (v == 1) {
                             // not adding dangling to 1;
                             continue;
@@ -348,6 +352,10 @@ public class Miner implements Runnable {
                                     ruleQueue.enqueue(newR);
                                 }
                             } else {
+                                if (config.xyz) {
+                                    // only add forward edge to 0
+                                    continue;
+                                }
                                 Rule newR = r.addDanglingAtom(v, -i - 1, false);
                                 if (!RulePruner.isFormatPruned(newR, knowledgeGraph, config)) {
                                     ruleQueue.enqueue(newR);
@@ -361,6 +369,9 @@ public class Miner implements Runnable {
                 // Add closing binary atoms.
                 for (int i = 0; i < r.nVariables; ++i) {
                     for (int j = 0; j < r.nVariables; ++j) {
+                        if (config.xyz && (i != 2 || j != 0)) {
+                            continue;
+                        }
                         if (i == j || r.extensionInfo.binaryClosingPids[i][j] == null) {
                             continue;
                         }

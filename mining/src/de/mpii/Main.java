@@ -127,6 +127,11 @@ public class Main {
         option.setRequired(false);
         options.addOption(option);
 
+        // xyz
+        option = new Option("xyz", "mine_xyz", false, "Fix the form of positive parts to XYZ");
+        option.setRequired(false);
+        options.addOption(option);
+
         // numWorkers
         option = new Option("nw", "num_workers", true, "Number of parallel workers (default: 8)");
         option.setRequired(false);
@@ -217,6 +222,9 @@ public class Main {
         if (cmd.hasOption("dj")) {
             config.disjunction = true;
         }
+        if (cmd.hasOption("xyz")) {
+            config.xyz = true;
+        }
         ov = cmd.getOptionValue("mc");
         if (ov != null) {
             config.minConf = Double.parseDouble(ov);
@@ -231,6 +239,10 @@ public class Main {
         }
         // Process.
         config.printConfig();
+        if (config.xyz && config.maxNumBinaryPositiveAtoms != 3) {
+            config.maxNumBinaryPositiveAtoms = 3;
+            LOGGER.info("XYZ enabled: maxNumBinaryPositiveAtoms is set to 3");
+        }
         if (config.disjunction) {
             if (config.maxNumAtoms > 4) {
                 throw new RuntimeException("Not support num atoms > 4 for disjunction");
