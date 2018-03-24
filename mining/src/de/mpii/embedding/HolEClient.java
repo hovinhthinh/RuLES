@@ -1,7 +1,5 @@
 package de.mpii.embedding;
 
-import de.mpii.util.Pair;
-
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -78,7 +76,7 @@ public class HolEClient extends EmbeddingClient {
         fftEntitiesEmbeddingImag = new double[nEntities][eLength];
         for (int i = 0; i < nEntities; ++i) {
             fftEntitiesEmbeddingReal[i] = Arrays.copyOf(entitiesEmbedding[i].value, eLength);
-            FFT.transform(fftEntitiesEmbeddingReal[i], fftEntitiesEmbeddingImag[i]);
+            FFTBase.fft(fftEntitiesEmbeddingReal[i], fftEntitiesEmbeddingImag[i], true);
         }
     }
 
@@ -98,22 +96,18 @@ public class HolEClient extends EmbeddingClient {
         return r;
     }
 
-    public static double[] getCircularCorrelation_log(double[] s, double[] o) {
-        int fftSize = s.length;
-        double[] ns = Arrays.copyOf(s, fftSize), no = Arrays.copyOf(o, fftSize);
-        Pair<double[], double[]> sfft = new Pair<>(ns, new double[fftSize]);
-        Pair<double[], double[]> offt = new Pair<>(no, new double[fftSize]);
-        FFT.transform(sfft.first, sfft.second);
-        FFT.transform(offt.first, offt.second);
-        double[] real = new double[fftSize], imag = new double[fftSize];
-        for (int i = 0; i < fftSize; ++i) {
-            real[i] = sfft.first[i] * offt.first[i] + sfft.second[i] * offt.second[i];
-            imag[i] = sfft.first[i] * offt.second[i] - sfft.second[i] * offt.first[i];
+    public static double[] getCircularCorrelation_log_test(double[] s, double[] o) {
+        int l = s.length;
+        double[] sReal = Arrays.copyOf(s, l), oReal = Arrays.copyOf(o, l);
+        double[] sImag = new double[l], oImag = new double[l];
+        FFTBase.fft(sReal, sImag, true);
+        FFTBase.fft(oReal, oImag, true);
+        double[] real = new double[l], imag = new double[l];
+        for (int i = 0; i < l; ++i) {
+            real[i] = sReal[i] * oReal[i] + sImag[i] * oImag[i];
+            imag[i] = sReal[i] * oImag[i] - sImag[i] * oReal[i];
         }
-        FFT.inverseTransform(real, imag);
-        for (int i = 0; i < fftSize; ++i) {
-            real[i] /= fftSize;
-        }
+        FFTBase.fft(real, imag, false);
         return real;
     }
 
@@ -125,10 +119,7 @@ public class HolEClient extends EmbeddingClient {
             imag[i] = fftEntitiesEmbeddingReal[subject][i] * fftEntitiesEmbeddingImag[object][i] -
                     fftEntitiesEmbeddingImag[subject][i] * fftEntitiesEmbeddingReal[object][i];
         }
-        FFT.inverseTransform(real, imag);
-        for (int i = 0; i < eLength; ++i) {
-            real[i] /= eLength;
-        }
+        FFTBase.fft(real, imag, false);
         return real;
     }
 
@@ -156,15 +147,15 @@ public class HolEClient extends EmbeddingClient {
 
     public static void main(String[] args) {
 //        new HolEClient("../data/fb15k/");
-//        double[] a = new double[]{7, 7, 7, 7, 7, 2, 3, -1, -1, -1, 1.5};
-//        double[] b = new double[]{1, 1, 1, 1, 1, 9, 8, 0, -1, -1, 1.5};
+//        double[] a = new double[]{3, 4, 5, 6, 7, 8, 7, 7};
+//        double[] b = new double[]{0, 9, 8, 6, 4, 5, 1, 1};
 //
 //        int x = a.length;
 //
-//        double[] c1 = getCircularCorrelation_log(a, b);
+//        double[] c1 = getCircularCorrelation_log_test(a, b);
 //        double[] c2 = getCircularCorrelation(a, b);
 //        for (int i = 0; i < x; ++i) {
-//            System.out.printf("%.3f\t%.3f\n", c1[i], c2[i]);
+//            System.out.printf("%.3f\t%.3f\n", c1[i]/a.length, c2[i]);
 //        }
     }
 }
