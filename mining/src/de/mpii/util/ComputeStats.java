@@ -80,6 +80,7 @@ public class ComputeStats {
                 double hc = knowledgeGraph.pidSOInstances[pid].size() == 0 ? 0 : ((double) sup) / knowledgeGraph.pidSOInstances[pid].size();
                 synchronized (out) {
                     out.printf("%s\t%d\t%.9f\t%.9f\t%.9f\t%.9f\t%.9f\n", front.second, sup, conf, pcaconf, mrr, conv, hc);
+                    out.flush();
                 }
             }
         }
