@@ -65,8 +65,9 @@ The embedding model will run and the embedding data will be stored in file `tran
 #### 3.2. HolE with AdaGrad
 ```
 $ bash run_hole.sh --workspace <workspace> --margin <margin> --lr <starting_learning_rate> --ncomp <embedding_dimensions>
-# Ex: $ bash run_hole.sh --workspace ./data/imdb/ --margin 2 --lr 0.1 --ncomp 150
-# Ex: $ bash run_hole.sh --workspace ./data/fb15k/ --margin 0.15 --lr 0.1 --ncomp 150
+# Ex: $ bash run_hole.sh --workspace ./data/imdb/ --margin 2 --lr 0.1 --ncomp 128
+# Ex: $ bash run_hole.sh --workspace ./data/fb15k/ --margin 0.15 --lr 0.1 --ncomp 128
+# It is recommmended to used <embedding_dimensions> = 2^x to speed up computation of Fast Fourier Transform.
 ```
 The embedding model will run and the embedding data will be stored in file `hole` in the workspace folder.
 #### 3.3. SSP
