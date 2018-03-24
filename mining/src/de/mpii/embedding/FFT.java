@@ -4,8 +4,8 @@ package de.mpii.embedding;
  * Created by hovinhthinh on 3/24/18.
  */
 public final class FFT {
-    public static double[] sinTableRadix2, cosTableRadix2;
-    public static double[] sinTableBluestein, cosTableBluestein;
+    public static double[][] sinTableRadix2, cosTableRadix2;
+    public static double[][] sinTableBluestein, cosTableBluestein;
 
     /*
      * Computes the discrete Fourier transform (DFT) of the given complex vector, storing the result back into the vector.
@@ -49,19 +49,27 @@ public final class FFT {
         // Trigonometric tables
         // Use global tables
         if (sinTableRadix2 == null) {
+            sinTableRadix2 = new double[n][];
+        }
+        if (sinTableRadix2[n-1] == null) {
             double[] sinTable = new double[n / 2];
             for (int i = 0; i < n / 2; i++) {
                 sinTable[i] = Math.sin(2 * Math.PI * i / n);
             }
-            sinTableRadix2 = sinTable;
+            sinTableRadix2[n-1] = sinTable;
         }
+        double[] sinTable = sinTableRadix2[n-1];
         if (cosTableRadix2 == null) {
+            cosTableRadix2 = new double[n][];
+        }
+        if (cosTableRadix2[n-1] == null) {
             double[] cosTable = new double[n / 2];
             for (int i = 0; i < n / 2; i++) {
                 cosTable[i] = Math.cos(2 * Math.PI * i / n);
             }
-            cosTableRadix2 = cosTable;
+            cosTableRadix2[n-1] = cosTable;
         }
+        double[] cosTable = cosTableRadix2[n-1];
 
         // Bit-reversed addressing permutation
         for (int i = 0; i < n; i++) {
@@ -83,8 +91,8 @@ public final class FFT {
             for (int i = 0; i < n; i += size) {
                 for (int j = i, k = 0; j < i + halfsize; j++, k += tablestep) {
                     int l = j + halfsize;
-                    double tpre = real[l] * cosTableRadix2[k] + imag[l] * sinTableRadix2[k];
-                    double tpim = -real[l] * sinTableRadix2[k] + imag[l] * cosTableRadix2[k];
+                    double tpre = real[l] * cosTable[k] + imag[l] * sinTable[k];
+                    double tpim = -real[l] * sinTable[k] + imag[l] * cosTable[k];
                     real[l] = real[j] - tpre;
                     imag[l] = imag[j] - tpim;
                     real[j] += tpre;
@@ -114,36 +122,44 @@ public final class FFT {
         // Trignometric tables
         // Use global tables
         if (sinTableBluestein == null) {
+            sinTableBluestein = new double[n][];
+        }
+        if (sinTableBluestein[n-1] == null) {
             double[] sinTable = new double[n];
             for (int i = 0; i < n; i++) {
                 int j = (int) ((long) i * i % (n * 2));  // This is more accurate than j = i * i
                 sinTable[i] = Math.sin(Math.PI * j / n);
             }
-            sinTableBluestein = sinTable;
+            sinTableBluestein[n-1] = sinTable;
         }
+        double[] sinTable = sinTableBluestein[n-1];
         if (cosTableBluestein == null) {
+            cosTableBluestein = new double[n][];
+        }
+        if (cosTableBluestein[n-1] == null) {
             double[] cosTable = new double[n];
             for (int i = 0; i < n; i++) {
                 int j = (int) ((long) i * i % (n * 2));  // This is more accurate than j = i * i
                 cosTable[i] = Math.cos(Math.PI * j / n);
             }
-            cosTableBluestein = cosTable;
+            cosTableBluestein[n-1] = cosTable;
         }
+        double[] cosTable = cosTableBluestein[n-1];
 
         // Temporary vectors and preprocessing
         double[] areal = new double[m];
         double[] aimag = new double[m];
         for (int i = 0; i < n; i++) {
-            areal[i] = real[i] * cosTableBluestein[i] + imag[i] * sinTableBluestein[i];
-            aimag[i] = -real[i] * sinTableBluestein[i] + imag[i] * cosTableBluestein[i];
+            areal[i] = real[i] * cosTable[i] + imag[i] * sinTable[i];
+            aimag[i] = -real[i] * sinTable[i] + imag[i] * cosTable[i];
         }
         double[] breal = new double[m];
         double[] bimag = new double[m];
-        breal[0] = cosTableBluestein[0];
-        bimag[0] = sinTableBluestein[0];
+        breal[0] = cosTable[0];
+        bimag[0] = sinTable[0];
         for (int i = 1; i < n; i++) {
-            breal[i] = breal[m - i] = cosTableBluestein[i];
-            bimag[i] = bimag[m - i] = sinTableBluestein[i];
+            breal[i] = breal[m - i] = cosTable[i];
+            bimag[i] = bimag[m - i] = sinTable[i];
         }
 
         // Convolution
@@ -153,8 +169,8 @@ public final class FFT {
 
         // Postprocessing
         for (int i = 0; i < n; i++) {
-            real[i] = creal[i] * cosTableBluestein[i] + cimag[i] * sinTableBluestein[i];
-            imag[i] = -creal[i] * sinTableBluestein[i] + cimag[i] * cosTableBluestein[i];
+            real[i] = creal[i] * cosTable[i] + cimag[i] * sinTable[i];
+            imag[i] = -creal[i] * sinTable[i] + cimag[i] * cosTable[i];
         }
     }
 
