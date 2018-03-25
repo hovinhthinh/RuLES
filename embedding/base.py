@@ -169,8 +169,8 @@ class Experiment(object):
             self.ev_test = self.evaluator(data['test_subs'], data['test_labels'])
             self.ev_valid = self.evaluator(data['valid_subs'], data['valid_labels'])
 
-        xs = true_triples
-        # xs = data['train_subs']
+        # xs = true_triples
+        xs = data['train_subs']
         ys = np.ones(len(xs))
 
         # create sampling objects
