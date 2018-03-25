@@ -42,11 +42,8 @@ public class GenXYZ {
                 int sup = 0;
                 int pcaBodySup = 0;
                 HashSet<Integer> goodS = new HashSet<>();
-                ArrayList<SOInstance> unknownFacts = new ArrayList<>();
                 for (SOInstance so : instances) {
-                    if (!knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {
-                        unknownFacts.add(so);
-                    } else {
+                    if (knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {
                         ++sup;
                         goodS.add(so.subject);
                     }
@@ -56,7 +53,7 @@ public class GenXYZ {
                         ++pcaBodySup;
                     }
                 }
-                if (unknownFacts.size() == 0 || instances.size() == 0) {
+                if (sup == instances.size() || instances.size() == 0) {
                     continue;
                 }
                 double conf = ((double) sup) / instances.size();
@@ -93,9 +90,9 @@ public class GenXYZ {
         }
         in.close();
 
-        ExecutorService executor = Executors.newFixedThreadPool(50);
+        ExecutorService executor = Executors.newFixedThreadPool(8);
         List<Future> futures = new ArrayList<>();
-        for (int i = 0; i < 50; ++i) {
+        for (int i = 0; i < 8; ++i) {
             futures.add(executor.submit(new GenXYZ.Runner(queue, out)));
         }
         try {
