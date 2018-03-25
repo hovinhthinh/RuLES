@@ -2,7 +2,7 @@
 
 echo 'Separating ideal data into training and test data'
 javac util/TrainingGen.java
-java -classpath util/ TrainingGen $1 $2 true
+java -classpath util/ TrainingGen $1 $2 ${3:-true}
 rm util/TrainingGen.class
 echo 'Normalizing data'
 python util/gen.py $1
