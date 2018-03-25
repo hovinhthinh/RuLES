@@ -266,6 +266,10 @@ public class Infer {
                     }
                 }
             }
+            if (localPredict == 0) {
+                --ruleCount;
+                continue;
+            }
             averageQuality += ((double) localNumTrue) / localPredict;
             LOGGER.info(String.format("quality = %.3f", ((double) localNumTrue) / localPredict));
             spearman.add(new Pair<>(((double) localNumTrue) / localPredict, 1 + top - ruleCount));
