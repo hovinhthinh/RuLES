@@ -18,24 +18,13 @@ public class TransEClient extends EmbeddingClient {
     private DoubleVector[] entitiesEmbedding, relationsEmbedding;
 
     public TransEClient(String workspace, String norm) {
+        super(workspace);
         LOGGER.info("Loading embedding TransE client from '" + workspace + "' with norm " + norm + ".");
         this.norm = norm;
         if (!norm.equals("L1")) {
             throw new RuntimeException("Support L1 norm only.");
         }
         try {
-            // Read nEntities, nRelations, eLength.
-            Scanner metaIn = new Scanner(new File(workspace + "/meta.txt"));
-            nEntities = metaIn.nextInt();
-            nRelations = metaIn.nextInt();
-            int nClasses = metaIn.nextInt();
-            metaIn.close();
-            trueFacts = new FactEncodedSetPerPredicate[nRelations];
-            cachedRankQueries = new ConcurrentHashMap[nRelations];
-            for (int i = 0; i < nRelations; ++i) {
-                trueFacts[i] = new FactEncodedSetPerPredicate();
-                cachedRankQueries[i] = new ConcurrentHashMap<>();
-            }
             // Read embeddings.
             DataInputStream eIn = new DataInputStream(new FileInputStream(
                     new File(workspace + "/transe")));
@@ -55,13 +44,6 @@ public class TransEClient extends EmbeddingClient {
                 }
             }
             eIn.close();
-            // Read true facts;
-            Scanner fIn = new Scanner(new File(workspace + "/train.txt"));
-            while (fIn.hasNext()) {
-                int s = fIn.nextInt(), p = fIn.nextInt(), o = fIn.nextInt();
-                trueFacts[p].addFact(s, o);
-            }
-            fIn.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -23,24 +23,10 @@ public class HolEClient extends EmbeddingClient {
     private boolean optimized = false;
 
     public HolEClient(String workspace) {
+        super(workspace);
         LOGGER.info("Loading embedding HolE client from '" + workspace + ".");
 
         try {
-            // Read nEntities, nRelations, eLength.
-            Scanner metaIn = new Scanner(new File(workspace + "/meta.txt"));
-            nEntities = metaIn.nextInt();
-            if (nEntities <= CACHED_CORREL_THRESHOLD) {
-                CACHED_CORREL = true;
-            }
-            nRelations = metaIn.nextInt();
-            int nClasses = metaIn.nextInt();
-            metaIn.close();
-            trueFacts = new FactEncodedSetPerPredicate[nRelations];
-            cachedRankQueries = new ConcurrentHashMap[nRelations];
-            for (int i = 0; i < nRelations; ++i) {
-                trueFacts[i] = new FactEncodedSetPerPredicate();
-                cachedRankQueries[i] = new ConcurrentHashMap<>();
-            }
             // Read embeddings.
             DataInputStream eIn = new DataInputStream(new FileInputStream(
                     new File(workspace + "/hole")));
@@ -60,13 +46,6 @@ public class HolEClient extends EmbeddingClient {
                 }
             }
             eIn.close();
-            // Read true facts;
-            Scanner fIn = new Scanner(new File(workspace + "/train.txt"));
-            while (fIn.hasNext()) {
-                int s = fIn.nextInt(), p = fIn.nextInt(), o = fIn.nextInt();
-                trueFacts[p].addFact(s, o);
-            }
-            fIn.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

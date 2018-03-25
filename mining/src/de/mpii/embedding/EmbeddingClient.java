@@ -1,6 +1,12 @@
 package de.mpii.embedding;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -13,6 +19,7 @@ public abstract class EmbeddingClient {
     protected FactEncodedSetPerPredicate[] trueFacts;
     protected ConcurrentHashMap<Long, Double>[] cachedRankQueries;
     protected static final int CACHE_LIMIT_PER_PREDICATE = 10000;
+    private static boolean NEGATIVE_TRAINING_ONLY = false;
 
     // Higher score indicates higher plausibility.
     public abstract double getScore(int subject, int predicate, int object);
@@ -60,4 +67,62 @@ public abstract class EmbeddingClient {
         }
     }
 
+    public EmbeddingClient(String workspace) {
+        try {
+            // Read nEntities, nRelations, eLength.
+            BufferedReader metaIn = new BufferedReader(new InputStreamReader(new FileInputStream(new File(workspace +
+                    "/meta.txt"))));
+            String[] arr = metaIn.readLine().split("\\s++");
+            nEntities = Integer.parseInt(arr[0]);
+            nRelations = Integer.parseInt(arr[1]);
+
+            HashMap<String, Integer> entitiesStringMap = new HashMap<>(), relationsStringMap = new HashMap<>();
+            for (int i = 0; i < nEntities; ++i) {
+                entitiesStringMap.put(metaIn.readLine(), i);
+            }
+            for (int i = 0; i < nRelations; ++i) {
+                relationsStringMap.put(metaIn.readLine(), i);
+            }
+            metaIn.close();
+
+            trueFacts = new FactEncodedSetPerPredicate[nRelations];
+            cachedRankQueries = new ConcurrentHashMap[nRelations];
+            for (int i = 0; i < nRelations; ++i) {
+                trueFacts[i] = new FactEncodedSetPerPredicate();
+                cachedRankQueries[i] = new ConcurrentHashMap<>();
+            }
+
+            if (NEGATIVE_TRAINING_ONLY) {
+                // Read true facts;
+                Scanner fIn = new Scanner(new File(workspace + "/train.txt"));
+                while (fIn.hasNext()) {
+                    int s = fIn.nextInt(), p = fIn.nextInt(), o = fIn.nextInt();
+                    trueFacts[p].addFact(s, o);
+                }
+                fIn.close();
+            } else {
+                BufferedReader idealIn = new BufferedReader(new InputStreamReader(new FileInputStream(new File(workspace +
+                        "/ideal.data.txt"))));
+                String line;
+                while ((line = idealIn.readLine()) != null) {
+                    if (line.isEmpty()) {
+                        break;
+                    }
+                    arr = line.split("\t");
+                    if (arr[1].equals("<type>") || arr[1].equals("<subClassOf>")) {
+                        continue;
+                    }
+                    if (entitiesStringMap.containsKey(arr[0]) && entitiesStringMap.containsKey(arr[2]) &&
+                            relationsStringMap.containsKey(arr[1])) {
+                        trueFacts[relationsStringMap.get(arr[1])].addFact(entitiesStringMap.get(arr[0]), entitiesStringMap
+                                .get(arr[2]));
+                    }
+                }
+                idealIn.close();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 }
