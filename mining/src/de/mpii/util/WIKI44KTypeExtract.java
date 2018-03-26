@@ -24,7 +24,7 @@ public class WIKI44KTypeExtract {
         for (int i = 0; i < nEntities; ++i) {
             String line = metaIn.readLine();
             String id = line.substring(line.lastIndexOf("_") + 1, line.length() - 1);
-            entities.put(id, metaIn.readLine());
+            entities.put(id, line);
         }
 
         metaIn.close();
