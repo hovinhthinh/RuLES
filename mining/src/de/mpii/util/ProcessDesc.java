@@ -9,9 +9,9 @@ import java.util.HashSet;
 public class ProcessDesc {
     public static void main(String[] args) throws Exception {
         BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream
-                ("../data/fb15k-new/entities_description.txt")));
+                ("../data/wiki44k/entities_description.txt")));
         PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream
-                ("../data/fb15k-new/tmp")));
+                ("../data/wiki44k/tmp")));
         String line;
         HashSet<String> goodId = new HashSet<>();
         while ((line = in.readLine()) != null) {
@@ -39,9 +39,9 @@ public class ProcessDesc {
         in.close();
         out.close();
 
-        in = new BufferedReader(new InputStreamReader(new FileInputStream("../data/fb15k-new/ideal.data.txt")));
+        in = new BufferedReader(new InputStreamReader(new FileInputStream("../data/wiki44k/ideal.data.txt")));
         out = new PrintWriter(new OutputStreamWriter(new FileOutputStream
-                ("../data/fb15k-new/ideal.data.new.txt")));
+                ("../data/wiki44k/ideal.data.new.txt")));
         HashSet<String> has = new HashSet<>();
         while ((line = in.readLine()) != null) {
             line = line.trim();
@@ -58,9 +58,9 @@ public class ProcessDesc {
         in.close();
         out.close();
 
-        in = new BufferedReader(new InputStreamReader(new FileInputStream("../data/fb15k-new/tmp")));
+        in = new BufferedReader(new InputStreamReader(new FileInputStream("../data/wiki44k/tmp")));
         out = new PrintWriter(new OutputStreamWriter(new FileOutputStream
-                ("../data/fb15k-new/entities_description.new.txt")));
+                ("../data/wiki44k/entities_description.new.txt")));
         while ((line = in.readLine()) != null) {
             line = line.trim();
             if (line.isEmpty()) {

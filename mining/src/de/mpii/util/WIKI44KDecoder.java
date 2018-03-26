@@ -36,20 +36,25 @@ public class WIKI44KDecoder {
                 String link = "https://www.wikidata.org/wiki/" + entities[i].entity.substring(entities[i].entity
                         .lastIndexOf("_"), entities[i].entity.length() - 1);
                 String html = null;
-                for (int k = 0; k < 2; ++k) {
+                for (int k = 0; k < 5; ++k) {
                     html = Crawler.getContentFromUrl(link);
                     if (html != null) {
                         break;
                     }
                 }
+                String default_str = entities[i].entity.substring(1, entities[i].entity.lastIndexOf("_")).replaceAll
+                        ("_", " ");
                 if (html == null) {
-                    System.out.println("err: " + entities[i].entity);
+                    entities[i].description = default_str;
+                    System.out.println(entities[i]);
                     continue;
                 }
                 entities[i].description = TParser.getContent(html, "<div " +
                         "class=\"wikibase-entitytermsview-heading-description \">", "</div>");
                 if (entities[i].description != null) {
                     entities[i].description = entities[i].description.replaceAll("\\s++", " ").trim();
+                } else {
+                    entities[i].description = default_str;
                 }
                 System.out.println(entities[i]);
             }
