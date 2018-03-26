@@ -6,6 +6,7 @@ import org.json.simple.parser.JSONParser;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -53,10 +54,13 @@ public class WIKI44KDecoder_2 {
                 if (e2e.containsKey(id)) {
                     Entity e = e2e.get(id);
                     String desc = (String) ((JSONObject) obj.get("descriptions")).get("en");
-                    out.println(e.toString());
+                    e.description = desc;
                     System.out.println(e.toString());
                 }
             }
+        }
+        for (Map.Entry<String, Entity> e : e2e.entrySet()) {
+            System.out.println(e.getValue().toString());
         }
         in.close();
         out.close();
