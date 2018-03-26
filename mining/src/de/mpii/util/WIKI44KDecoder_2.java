@@ -53,7 +53,7 @@ public class WIKI44KDecoder_2 {
                 String id = (String) obj.get("id");
                 if (e2e.containsKey(id)) {
                     Entity e = e2e.get(id);
-                    String desc = (String) ((JSONObject) obj.get("descriptions")).get("en");
+                    String desc = (String) ((JSONObject) ((JSONObject) obj.get("descriptions")).get("en")).get("value");
                     e.description = desc;
                     System.out.println(e.toString());
                 }
