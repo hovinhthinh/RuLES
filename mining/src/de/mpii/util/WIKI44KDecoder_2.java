@@ -16,10 +16,11 @@ public class WIKI44KDecoder_2 {
     private static class Entity {
         String entity;
         String description;
+        String description_all;
 
         @Override
         public String toString() {
-            return entity + "\t" + description;
+            return entity + "\t" + description + "\t" + description_all;
         }
     }
 
@@ -54,6 +55,8 @@ public class WIKI44KDecoder_2 {
                 if (e2e.containsKey(id)) {
                     Entity e = e2e.get(id);
                     try {
+                        e.description_all = ((JSONObject) obj.get("descriptions")).toJSONString().trim().replaceAll
+                                ("\\s++", " ");
                         String desc = (String) ((JSONObject) ((JSONObject) obj.get("descriptions")).get("en")).get("value");
                         e.description = desc;
                     } catch (Exception ex) {
