@@ -110,9 +110,12 @@ public class KnowledgeGraph {
 
             while (in.hasNext()) {
                 int s = in.nextInt(), p = in.nextInt(), o = in.nextInt();
+                if (!trueFacts.addFact(s, p, o)) {
+                    continue;
+                }
                 outEdges[s].add(new OutgoingEdge(p, o));
                 outEdges[o].add(new OutgoingEdge(-p - 1, s));
-                trueFacts.addFact(s, p, o);
+
                 pidSOInstances[p].add(new SOInstance(s, o));
 
                 long soCode = encodeSO(s, o);
@@ -250,8 +253,8 @@ public class KnowledgeGraph {
             return (((long) subject) * BASE + predicate) * BASE + object;
         }
 
-        public void addFact(int subject, int predicate, int object) {
-            set.add(encode(subject, predicate, object));
+        public boolean addFact(int subject, int predicate, int object) {
+            return set.add(encode(subject, predicate, object));
         }
 
         public boolean containFact(int subject, int predicate, int object) {

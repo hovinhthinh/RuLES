@@ -160,8 +160,8 @@ public class Miner implements Runnable {
                     }
                     variableValues[a.sid] = t;
                     recur(rule, position + 1, variableValues, stats);
+                    variableValues[a.sid] = -1;
                 }
-                variableValues[a.sid] = -1;
             } else {
                 boolean hasType = knowledgeGraph.trueTypes.containType(variableValues[a.sid], a.pid);
                 if (hasType == a.negated) {
@@ -180,8 +180,8 @@ public class Miner implements Runnable {
                     variableValues[atom.sid] = so.subject;
                     variableValues[atom.oid] = so.object;
                     recur(rule, position + 1, variableValues, stats);
+                    variableValues[atom.sid] = variableValues[atom.oid] = -1;
                 }
-                variableValues[atom.sid] = variableValues[atom.oid] = -1;
             } else if (variableValues[atom.sid] == -1 || variableValues[atom.oid] == -1) {
                 if (variableValues[atom.oid] == -1) {
                     for (KnowledgeGraph.OutgoingEdge e : knowledgeGraph.outEdges[variableValues[atom.sid]]) {
@@ -193,8 +193,8 @@ public class Miner implements Runnable {
                         }
                         variableValues[atom.oid] = e.oid;
                         recur(rule, position + 1, variableValues, stats);
+                        variableValues[atom.oid] = -1;
                     }
-                    variableValues[atom.oid] = -1;
                 } else {
                     for (KnowledgeGraph.OutgoingEdge e : knowledgeGraph.outEdges[variableValues[atom.oid]]) {
                         if (-e.pid - 1 != atom.pid) {
@@ -205,8 +205,8 @@ public class Miner implements Runnable {
                         }
                         variableValues[atom.sid] = e.oid;
                         recur(rule, position + 1, variableValues, stats);
+                        variableValues[atom.sid] = -1;
                     }
-                    variableValues[atom.sid] = -1;
                 }
             } else {
                 boolean hasFact = knowledgeGraph.trueFacts.containFact(variableValues[atom.sid], atom.pid,
