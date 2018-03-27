@@ -369,7 +369,7 @@ public class Miner implements Runnable {
                 // Add closing binary atoms.
                 for (int i = 0; i < r.nVariables; ++i) {
                     for (int j = 0; j < r.nVariables; ++j) {
-                        if (config.xyz && (i != 2 || j != 0)) {
+                        if (config.xyz && (i != 2 || j != 1)) {
                             continue;
                         }
                         if (i == j || r.extensionInfo.binaryClosingPids[i][j] == null) {
