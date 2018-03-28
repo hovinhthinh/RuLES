@@ -6,7 +6,6 @@ import de.mpii.mining.atom.InstantiatedAtom;
 import de.mpii.mining.atom.UnaryAtom;
 import de.mpii.mining.graph.KnowledgeGraph;
 import de.mpii.mining.rule.Rule;
-import de.mpii.mining.rule.RuleStats;
 import de.mpii.mining.rule.SOInstance;
 
 import java.io.*;
@@ -137,9 +136,9 @@ public class Infer {
             if (variableValues[a.sid] == -1) {
                 // This case only happens for positive atom.
                 for (int t : knowledgeGraph.typeInstances[a.pid]) {
-                    if (duplicatedVar(variableValues, t)) {
-                        continue;
-                    }
+//                    if (duplicatedVar(variableValues, t)) {
+//                        continue;
+//                    }
                     variableValues[a.sid] = t;
                     recur(rule, position + 1, variableValues, headInstances);
                     variableValues[a.sid] = -1;
@@ -155,10 +154,10 @@ public class Infer {
             BinaryAtom atom = (BinaryAtom) a;
             if (variableValues[atom.sid] == -1 && variableValues[atom.oid] == -1) {
                 for (SOInstance so : knowledgeGraph.pidSOInstances[atom.pid]) {
-                    if (duplicatedVar(variableValues, so.subject) || duplicatedVar(variableValues, so.object) || so
-                            .subject == so.object) {
-                        continue;
-                    }
+//                    if (duplicatedVar(variableValues, so.subject) || duplicatedVar(variableValues, so.object) || so
+//                            .subject == so.object) {
+//                        continue;
+//                    }
                     variableValues[atom.sid] = so.subject;
                     variableValues[atom.oid] = so.object;
                     recur(rule, position + 1, variableValues, headInstances);
@@ -170,9 +169,9 @@ public class Infer {
                         if (e.pid != atom.pid) {
                             continue;
                         }
-                        if (duplicatedVar(variableValues, e.oid)) {
-                            continue;
-                        }
+//                        if (duplicatedVar(variableValues, e.oid)) {
+//                            continue;
+//                        }
                         variableValues[atom.oid] = e.oid;
                         recur(rule, position + 1, variableValues, headInstances);
                         variableValues[atom.oid] = -1;
@@ -182,9 +181,9 @@ public class Infer {
                         if (-e.pid - 1 != atom.pid) {
                             continue;
                         }
-                        if (duplicatedVar(variableValues, e.oid)) {
-                            continue;
-                        }
+//                        if (duplicatedVar(variableValues, e.oid)) {
+//                            continue;
+//                        }
                         variableValues[atom.sid] = e.oid;
                         recur(rule, position + 1, variableValues, headInstances);
                         variableValues[atom.sid] = -1;
@@ -210,10 +209,27 @@ public class Infer {
         return headInstances;
     }
 
-    // args: <workspace> <file> <top> <new_facts>
+    // args: <workspace> <file> <top> <new_facts> <predicate>
     // Process first <top> rules of the <file> (top by lines, not by scr)
     public static void main(String[] args) throws Exception {
-//        args = new String[]{"../data/imdb/", "../data/imdb/exp1/xyz.transe.conf", "3", "tmp", "<directedBy>"};
+//        args = "../data/fb15k-new/ ../msarin/fb15k.amie.pca.2 50 tmp -s10".split("\\s++");
+
+        int mins = 0;
+        for (int i = 0; i < args.length; ++i) {
+            if (args[i].startsWith("-s")) {
+                mins = Integer.parseInt(args[i].substring(2));
+                String[] temp = args;
+                args = new String[temp.length - 1];
+                int count = 0;
+                for (int j = 0; j < temp.length; ++j) {
+                    if (!temp[j].startsWith("-s")) {
+                        args[count++] = temp[j];
+                    }
+                }
+                break;
+            }
+        }
+
         int top = Integer.parseInt(args[2]);
         knowledgeGraph = new KnowledgeGraph(args[0]);
 
@@ -266,7 +282,7 @@ public class Infer {
                     }
                 }
             }
-            if (localPredict == 0) {
+            if (localPredict == 0 || localNumTrue < mins) {
                 --ruleCount;
                 continue;
             }
