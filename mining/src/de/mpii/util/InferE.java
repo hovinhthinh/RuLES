@@ -22,7 +22,8 @@ public class InferE {
     // args: <workspace> <file> <top> <new_facts> <predicate>
     // Process first <top> rules of the <file> (top by lines, not by scr)
     public static void main(String[] args) throws Exception {
-//        args = "../data/fb15k-new/ ../exp3/fb15k.rumis.10 20 -s10 tmp".split("\\s++");
+//        args = "../data/wiki44k/ ../exp3/wiki44k.rumis 20 -s1 tmp".split("\\s++");
+//        args = "../data/wiki44k/ ../exp3/wiki44k.embed.10.ec02 20 tmp".split("\\s++");
 
         int mins = 0;
         for (int i = 0; i < args.length; ++i) {
@@ -52,6 +53,7 @@ public class InferE {
             predicate = args[4];
         }
         KnowledgeGraph.FactEncodedSet mined = new KnowledgeGraph.FactEncodedSet();
+//        KnowledgeGraph.FactEncodedSet minedHorn = new KnowledgeGraph.FactEncodedSet();
         int unknownNum = 0;
         int total = 0;
         double averageQuality = 0;
@@ -120,7 +122,7 @@ public class InferE {
                     ++totalTruePrevented;
                 }
             }
-            averageRevision += ((double) totalTruePrevented) / totalPrevented;
+            averageRevision += totalPrevented == 0 ? 0 : ((double) totalTruePrevented) / totalPrevented;
             // end of revision
             LOGGER.info(String.format("quality = %.3f", ((double) localNumTrue) / localPredict));
             spearman.add(new Pair<>(((double) localNumTrue) / localPredict, 1 + top - ruleCount));
