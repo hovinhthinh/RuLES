@@ -22,7 +22,7 @@ public class InferE {
     // args: <workspace> <file> <top> <new_facts> <predicate>
     // Process first <top> rules of the <file> (top by lines, not by scr)
     public static void main(String[] args) throws Exception {
-        args = "../data/wiki44k/ ../msarin/wiki44k.amie.pca 500 tmp".split("\\s++");
+//        args = "../data/fb15k-new/ ../exp3/fb15k.rumis.10 20 -s10 tmp".split("\\s++");
 
         int mins = 0;
         for (int i = 0; i < args.length; ++i) {
@@ -41,7 +41,7 @@ public class InferE {
         }
 
         int top = Integer.parseInt(args[2]);
-        knowledgeGraph = new KnowledgeGraph(args[0]);
+        knowledgeGraph = Infer.knowledgeGraph = new KnowledgeGraph(args[0]);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(args[1])));
         PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(args[3]))));
@@ -110,6 +110,9 @@ public class InferE {
             int totalTruePrevented = 0;
             for (SOInstance so : hornInstances) {
                 if (instances.contains(so)) {
+                    continue;
+                }
+                if (knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {
                     continue;
                 }
                 ++totalPrevented;
