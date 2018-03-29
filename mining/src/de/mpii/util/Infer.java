@@ -102,14 +102,14 @@ public class Infer {
         return r;
     }
 
-    private static boolean duplicatedVar(int variableValue[], int newV) {
-        for (int i = 0; i < variableValue.length; ++i) {
-            if (variableValue[i] == newV) {
-                return true;
-            }
-        }
-        return false;
-    }
+//    private static boolean duplicatedVar(int variableValue[], int newV) {
+//        for (int i = 0; i < variableValue.length; ++i) {
+//            if (variableValue[i] == newV) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     private static void recur(Rule rule, int position, int variableValues[], HashSet<SOInstance> headInstances) {
         if (position == rule.atoms.size()) {
