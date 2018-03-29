@@ -22,7 +22,7 @@ public class InferE {
     // args: <workspace> <file> <top> <new_facts> <predicate>
     // Process first <top> rules of the <file> (top by lines, not by scr)
     public static void main(String[] args) throws Exception {
-//        args = "../data/wiki44k/ ../exp3/wiki44k.rumis 20 -s1 tmp".split("\\s++");
+//        args = "../data/wiki44k/ ../exp3/wiki44k.embed.10.ec02 200 -s10 tmp".split("\\s++");
 //        args = "../data/wiki44k/ ../exp3/wiki44k.embed.10.ec02 20 tmp".split("\\s++");
 
         int mins = 0;
@@ -75,6 +75,7 @@ public class InferE {
             int pid = r.atoms.get(0).pid;
             int localNumTrue = 0;
             int localPredict = 0;
+            int support = 0;
 
             for (SOInstance so : instances) {
                 if (!knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {
@@ -93,9 +94,12 @@ public class InferE {
                                 .relationsString[pid], knowledgeGraph.entitiesString[so.object], (unknown == false) ?
                                 "TRUE" : "null");
                     }
+                } else {
+                    ++support;
                 }
             }
-            if (localPredict == 0 || localNumTrue < mins) {
+
+            if (localPredict == 0 || support < mins) {
                 --ruleCount;
                 continue;
             }

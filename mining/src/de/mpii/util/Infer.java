@@ -262,6 +262,7 @@ public class Infer {
             int pid = r.atoms.get(0).pid;
             int localNumTrue = 0;
             int localPredict = 0;
+            int support = 0;
 
             for (SOInstance so : instances) {
                 if (!knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {
@@ -280,9 +281,12 @@ public class Infer {
                                 .relationsString[pid], knowledgeGraph.entitiesString[so.object], (unknown == false) ?
                                 "TRUE" : "null");
                     }
+                } else {
+                    ++support;
                 }
             }
-            if (localPredict == 0 || localNumTrue < mins) {
+
+            if (localPredict == 0 || support < mins) {
                 --ruleCount;
                 continue;
             }
