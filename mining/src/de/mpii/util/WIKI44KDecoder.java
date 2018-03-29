@@ -7,6 +7,51 @@ import java.util.ArrayList;
  * Created by hovinhthinh on 3/26/18.
  */
 public class WIKI44KDecoder {
+    // args: <Freebase/wikidata mapping file> <meta file>
+    // write output to id2info
+    public static void main(String[] args) throws Exception {
+        args = new String[]{"../data/wiki44k/meta.txt"};
+
+        int nEntities = 0;
+        BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(new File(args[0]))));
+        String line = in.readLine();
+        nEntities = Integer.parseInt(line.split("\t")[0]);
+        WIKI44KDecoder.Entity[] entities = new WIKI44KDecoder.Entity[nEntities];
+        for (int i = 0; i < nEntities; ++i) {
+            entities[i] = new WIKI44KDecoder.Entity();
+            entities[i].entity = in.readLine();
+        }
+        in.close();
+        try {
+            in = new BufferedReader(new InputStreamReader(new FileInputStream(new File("e2d_wiki44k"))));
+            for (int i = 0; i < nEntities; ++i) {
+                line = in.readLine();
+                String[] arr = line.split("\t");
+                entities[i].entity = arr[0];
+                entities[i].description = arr[1];
+
+            }
+            in.close();
+        } catch (Exception e) {
+        }
+        int nWorkers = 16;
+        ArrayList<Thread> threads = new ArrayList<>();
+        for (int i = 0; i < nWorkers; ++i) {
+            Thread t = new Thread(new WIKI44KDecoder.Worker(entities, i, nWorkers));
+            t.start();
+            threads.add(t);
+        }
+        for (Thread t : threads) {
+            t.join();
+        }
+
+        PrintWriter out = new PrintWriter(new File("e2d_wiki44k"));
+        for (WIKI44KDecoder.Entity e : entities) {
+            out.println(e);
+        }
+        out.close();
+    }
+
     private static class Entity {
         String entity;
         String description;
@@ -59,51 +104,6 @@ public class WIKI44KDecoder {
                 System.out.println(entities[i]);
             }
         }
-    }
-
-    // args: <Freebase/wikidata mapping file> <meta file>
-    // write output to id2info
-    public static void main(String[] args) throws Exception {
-        args = new String[]{"../data/wiki44k/meta.txt"};
-
-        int nEntities = 0;
-        BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(new File(args[0]))));
-        String line = in.readLine();
-        nEntities = Integer.parseInt(line.split("\t")[0]);
-        WIKI44KDecoder.Entity[] entities = new WIKI44KDecoder.Entity[nEntities];
-        for (int i = 0; i < nEntities; ++i) {
-            entities[i] = new WIKI44KDecoder.Entity();
-            entities[i].entity = in.readLine();
-        }
-        in.close();
-        try {
-            in = new BufferedReader(new InputStreamReader(new FileInputStream(new File("e2d_wiki44k"))));
-            for (int i = 0; i < nEntities; ++i) {
-                line = in.readLine();
-                String[] arr = line.split("\t");
-                entities[i].entity = arr[0];
-                entities[i].description = arr[1];
-
-            }
-            in.close();
-        } catch (Exception e) {
-        }
-        int nWorkers = 16;
-        ArrayList<Thread> threads = new ArrayList<>();
-        for (int i = 0; i < nWorkers; ++i) {
-            Thread t = new Thread(new WIKI44KDecoder.Worker(entities, i, nWorkers));
-            t.start();
-            threads.add(t);
-        }
-        for (Thread t : threads) {
-            t.join();
-        }
-
-        PrintWriter out = new PrintWriter(new File("e2d_wiki44k"));
-        for (WIKI44KDecoder.Entity e : entities) {
-            out.println(e);
-        }
-        out.close();
     }
 
 }

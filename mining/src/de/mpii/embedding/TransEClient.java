@@ -3,8 +3,6 @@ package de.mpii.embedding;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.Scanner;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
@@ -49,6 +47,10 @@ public class TransEClient extends EmbeddingClient {
         }
     }
 
+    public static void main(String[] args) {
+        new TransEClient("../data/imdb/", "L1");
+    }
+
     @Override
     public double getScore(int subject, int predicate, int object) {
         double score = 0;
@@ -57,9 +59,5 @@ public class TransEClient extends EmbeddingClient {
                     entitiesEmbedding[object].value[i]);
         }
         return -score;
-    }
-
-    public static void main(String[] args) {
-        new TransEClient("../data/imdb/", "L1");
     }
 }

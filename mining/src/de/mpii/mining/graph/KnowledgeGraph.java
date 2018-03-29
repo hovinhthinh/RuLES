@@ -231,10 +231,6 @@ public class KnowledgeGraph {
             this.oid = oid;
         }
 
-        public long encode() {
-            return ((long) pid) * 1000000000 + oid;
-        }
-
         public static OutgoingEdge fromCode(long code) {
             int pid = (int) (code / 1000000000), oid = (int) (code % 1000000000);
             if (oid < 0) {
@@ -242,6 +238,10 @@ public class KnowledgeGraph {
                 --pid;
             }
             return new OutgoingEdge(pid, oid);
+        }
+
+        public long encode() {
+            return ((long) pid) * 1000000000 + oid;
         }
     }
 

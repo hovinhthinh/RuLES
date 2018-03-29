@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.HashSet;
 
 /**
  * Created by hovinhthinh on 3/26/18.
@@ -29,7 +28,7 @@ public class WIKI44KTypeExtract {
 
         metaIn.close();
 
-        for (String line : DataSamplingPredicates.readlines("/scratch/GW/pool0/hvthinh/type.wiki")) {
+        for (String line : IO.readlines("/scratch/GW/pool0/hvthinh/type.wiki")) {
             String[] arr = line.split(" ");
             String s = arr[0].substring(arr[0].lastIndexOf("/") + 1, arr[0].length() - 1);
             String o = arr[2].substring(arr[2].lastIndexOf("/") + 1, arr[2].length() - 1);

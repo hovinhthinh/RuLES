@@ -91,31 +91,14 @@ class ConstantRuleQueue {
 }
 
 class ConstantRuleStats {
-    static class HeadStats {
-        public int pid, value;
-        public double hc, conf, mrr, scr;
-
-        // pid < 0 indicates reversed head.
-        public HeadStats(int pid, int value, double hc, double conf, double mrr, double scr) {
-            this.pid = pid;
-            this.value = value;
-            this.hc = hc;
-            this.conf = conf;
-            this.mrr = mrr;
-            this.scr = scr;
-        }
-    }
-
     // TODO: disable this bound.
     public static final int HEAD_INSTANCE_BOUND = 10000;
-
     public HashSet<Integer> headInstances;
+    public HashSet<Long> coupleSet;
 
     public ConstantRuleStats() {
         headInstances = new HashSet<>();
     }
-
-    public HashSet<Long> coupleSet;
 
     public long encodeCouple(int pid, int value) {
         return ((long) 999983) * pid + value;
@@ -237,6 +220,21 @@ class ConstantRuleStats {
             }
         }
         headInstances = null;
+    }
+
+    static class HeadStats {
+        public int pid, value;
+        public double hc, conf, mrr, scr;
+
+        // pid < 0 indicates reversed head.
+        public HeadStats(int pid, int value, double hc, double conf, double mrr, double scr) {
+            this.pid = pid;
+            this.value = value;
+            this.hc = hc;
+            this.conf = conf;
+            this.mrr = mrr;
+            this.scr = scr;
+        }
     }
 }
 

@@ -16,40 +16,6 @@ public class InferBatch {
 
     public static KnowledgeGraph knowledgeGraph;
 
-
-    static class RuleStats {
-        public String rule;
-        public double pcaconf;
-        public double conf;
-        public double mmr;
-        public double quality;
-        public double conv;
-
-        public RuleStats(String rule, double pcaconf, double conf, double mmr, double quality, double conv) {
-            this.rule = rule;
-            this.pcaconf = pcaconf;
-            this.conf = conf;
-            this.mmr = mmr;
-            this.quality = quality;
-            this.conv = conv;
-        }
-
-        public double chosenMetric;
-    }
-
-    static class CompareF implements Comparator<RuleStats> {
-        double lambda;
-
-        public CompareF(double lambda) {
-            this.lambda = lambda;
-        }
-
-        @Override
-        public int compare(RuleStats o1, RuleStats o2) {
-            return Double.compare(o2.chosenMetric * (1 - lambda) + o2.mmr * lambda, o1.chosenMetric * (1 - lambda) + o1.mmr * lambda);
-        }
-    }
-
     public static void process(String outputFile, double[] weights, ArrayList<RuleStats> stats, int[] range) throws
             Exception {
         PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile))));
@@ -155,5 +121,37 @@ public class InferBatch {
             s.chosenMetric = s.conv;
         }
         process(args[3] + ".conv.txt", weights, stats, range);
+    }
+
+    static class RuleStats {
+        public String rule;
+        public double pcaconf;
+        public double conf;
+        public double mmr;
+        public double quality;
+        public double conv;
+        public double chosenMetric;
+
+        public RuleStats(String rule, double pcaconf, double conf, double mmr, double quality, double conv) {
+            this.rule = rule;
+            this.pcaconf = pcaconf;
+            this.conf = conf;
+            this.mmr = mmr;
+            this.quality = quality;
+            this.conv = conv;
+        }
+    }
+
+    static class CompareF implements Comparator<RuleStats> {
+        double lambda;
+
+        public CompareF(double lambda) {
+            this.lambda = lambda;
+        }
+
+        @Override
+        public int compare(RuleStats o1, RuleStats o2) {
+            return Double.compare(o2.chosenMetric * (1 - lambda) + o2.mmr * lambda, o1.chosenMetric * (1 - lambda) + o1.mmr * lambda);
+        }
     }
 }

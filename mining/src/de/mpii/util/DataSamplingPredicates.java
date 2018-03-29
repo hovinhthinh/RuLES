@@ -1,30 +1,12 @@
 package de.mpii.util;
 
-import java.io.*;
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
  * Created by hovinhthinh on 3/21/18.
  */
 public class DataSamplingPredicates {
-    public static ArrayList<String> readlines(String file) {
-        try {
-            ArrayList<String> l = new ArrayList<>();
-            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-            String line;
-            while ((line = in.readLine()) != null) {
-                l.add(line);
-            }
-            in.close();
-            return l;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static PrintWriter openForWrite(String file) throws IOException {
-        return new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file))));
-    }
 
     public static ArrayList<String[]> filter_1(ArrayList<String[]> input) {
         HashMap<String, Integer> e2deg = new HashMap<>();
@@ -40,11 +22,6 @@ public class DataSamplingPredicates {
             good.add(s);
         }
         return good;
-    }
-
-    public static class PredStats {
-        int count = 0;
-        HashSet<String> US = new HashSet<>(), UO = new HashSet<>();
     }
 
     public static void writeStat(ArrayList<String[]> input) {
@@ -83,7 +60,7 @@ public class DataSamplingPredicates {
     // args: <input> <#pred> <remove_1_rounds> <output>
     public static void main(String[] args) throws Exception {
 //        args = "../data/visualGnome/raw 100 50 ../data/visualGnome/good".split("\\s++");
-        List<String> input = readlines(args[0]);
+        List<String> input = IO.readlines(args[0]);
         HashMap<String, Integer> pred2count = new HashMap<>();
         int limPred = Integer.parseInt(args[1]);
 
@@ -129,11 +106,16 @@ public class DataSamplingPredicates {
             good = filtered;
         }
 
-        PrintWriter out = openForWrite(args[3]);
+        PrintWriter out = IO.openForWrite(args[3]);
         for (String[] s : good) {
             out.printf("%s\t%s\t%s\n", s[0], s[1], s[2]);
         }
         out.close();
         writeStat(good);
+    }
+
+    public static class PredStats {
+        int count = 0;
+        HashSet<String> US = new HashSet<>(), UO = new HashSet<>();
     }
 }

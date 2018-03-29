@@ -5,27 +5,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Scanner;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 public class SSPClient extends EmbeddingClient {
     public static final Logger LOGGER = Logger.getLogger(SSPClient.class.getName());
-
-    private DoubleVector[] entitiesEmbedding, relationsEmbedding, semantic;
-
     double balance;
-
-    double readDouble(DataInputStream in) throws IOException {
-        byte[] b = new byte[8];
-        in.read(b, 0, 8);
-        for (int i = 0; i < 4; ++i) {
-            byte x = b[i];
-            b[i] = b[7 - i];
-            b[7 - i] = x;
-        }
-        return ByteBuffer.wrap(b).getDouble();
-    }
+    private DoubleVector[] entitiesEmbedding, relationsEmbedding, semantic;
 
     public SSPClient(String workspace) {
         super(workspace);
@@ -64,6 +49,21 @@ public class SSPClient extends EmbeddingClient {
         }
     }
 
+    public static void main(String[] args) {
+        new SSPClient("../data/fb15k/");
+    }
+
+    double readDouble(DataInputStream in) throws IOException {
+        byte[] b = new byte[8];
+        in.read(b, 0, 8);
+        for (int i = 0; i < 4; ++i) {
+            byte x = b[i];
+            b[i] = b[7 - i];
+            b[7 - i] = x;
+        }
+        return ByteBuffer.wrap(b).getDouble();
+    }
+
     @Override
     public double getScore(int subject, int predicate, int object) {
         double[] sem = new double[eLength];
@@ -88,9 +88,5 @@ public class SSPClient extends EmbeddingClient {
         }
 
         return -balance * first - second;
-    }
-
-    public static void main(String[] args) {
-        new SSPClient("../data/fb15k/");
     }
 }

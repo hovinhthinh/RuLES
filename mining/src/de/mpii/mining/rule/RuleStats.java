@@ -13,31 +13,12 @@ import java.util.*;
 
 
 public class RuleStats {
-    public static class DisjunctionStats {
-        public int pid1, pid2;
-        public double hc, conf, mrr, scr, inreaseScr;
-
-        public DisjunctionStats(int pid1, int pid2, double hc, double conf, double mrr, double scr, double inreaseScr) {
-            this.pid1 = pid1;
-            this.pid2 = pid2;
-            this.hc = hc;
-            this.conf = conf;
-            this.mrr = mrr;
-            this.scr = scr;
-            this.inreaseScr = inreaseScr;
-        }
-    }
-
     // TODO: disable this bound.
     public static final int MRR_SAMPLE_SIZE = 200;
-
     public int ruleSupport[], bodySupport;
     public double[] headCoverage, confidence, mrr, scr, ec;
-
     public HashSet<SOInstance> headInstances;
-
     public List<DisjunctionStats> disjunctionStats;
-
     // -1 is pruned, 0 is non-closed.
     private double[] sourceScr;
 
@@ -262,5 +243,20 @@ public class RuleStats {
         }
 
         headInstances = null;
+    }
+
+    public static class DisjunctionStats {
+        public int pid1, pid2;
+        public double hc, conf, mrr, scr, inreaseScr;
+
+        public DisjunctionStats(int pid1, int pid2, double hc, double conf, double mrr, double scr, double inreaseScr) {
+            this.pid1 = pid1;
+            this.pid2 = pid2;
+            this.hc = hc;
+            this.conf = conf;
+            this.mrr = mrr;
+            this.scr = scr;
+            this.inreaseScr = inreaseScr;
+        }
     }
 }

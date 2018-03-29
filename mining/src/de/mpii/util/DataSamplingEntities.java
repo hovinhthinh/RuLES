@@ -11,7 +11,7 @@ import java.util.Map;
 public class DataSamplingEntities {
     // args: <file> <threshold> <out>
     public static void main(String[] args) throws Exception {
-        ArrayList<String> lines = DataSamplingPredicates.readlines(args[0]);
+        ArrayList<String> lines = IO.readlines(args[0]);
         HashMap<String, Integer> entity2deg = new HashMap<>();
         for (String line : lines) {
             String arr[] = line.split("\t");
@@ -28,7 +28,7 @@ public class DataSamplingEntities {
             }
         }
 
-        PrintWriter out = DataSamplingPredicates.openForWrite(args[2]);
+        PrintWriter out = IO.openForWrite(args[2]);
         for (String line : lines) {
             String arr[] = line.split("\t");
             if (entity2deg.get(arr[0]) >= threshold && entity2deg.get(arr[2]) >= threshold) {

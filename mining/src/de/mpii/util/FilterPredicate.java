@@ -26,6 +26,7 @@ public class FilterPredicate {
             "<producedIn>\n" +
             "<isCitizenOf>\n" +
             "<hasGenre>").split("\\s++");
+
     public static void main(String[] args) throws Exception {
         String file = "../data/imdb/amie.xyz.stats.sp10";
         BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file)));

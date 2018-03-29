@@ -4,20 +4,15 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Arrays;
-import java.util.Scanner;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 public class HolEClient extends EmbeddingClient {
     public static final Logger LOGGER = Logger.getLogger(HolEClient.class.getName());
     // Automatically turn on CACHED_CORREL if nEntities <= this threshold.
     private static final int CACHED_CORREL_THRESHOLD = 15000;
-
-    private boolean CACHED_CORREL = false;
-
-    private DoubleVector[] entitiesEmbedding, relationsEmbedding;
     double correl[][][];
-
+    private boolean CACHED_CORREL = false;
+    private DoubleVector[] entitiesEmbedding, relationsEmbedding;
     private double[][] fftEntitiesEmbeddingReal, fftEntitiesEmbeddingImag;
 
     private boolean optimized = false;
@@ -101,6 +96,20 @@ public class HolEClient extends EmbeddingClient {
         return real;
     }
 
+    public static void main(String[] args) {
+//        new HolEClient("../data/fb15k/");
+        double[] a = new double[]{3, 4, 5, 6, 7, 8, 7, 7};
+        double[] b = new double[]{0, 9, 8, 6, 4, 5, 1, 1};
+
+        int x = a.length;
+
+        double[] c1 = getCircularCorrelation_log_test(a, b);
+        double[] c2 = getCircularCorrelation(a, b);
+        for (int i = 0; i < x; ++i) {
+            System.out.printf("%.3f\t%.3f\n", c1[i], c2[i]);
+        }
+    }
+
     public double[] getCircularCorrelation_log_optimized(int subject, int object) {
         double[] real = new double[eLength], imag = new double[eLength];
         for (int i = 0; i < eLength; ++i) {
@@ -138,20 +147,6 @@ public class HolEClient extends EmbeddingClient {
                 result += r[k] * relationsEmbedding[predicate].value[k];
             }
             return 1.0 / (1 + Math.exp(-result));
-        }
-    }
-
-    public static void main(String[] args) {
-//        new HolEClient("../data/fb15k/");
-        double[] a = new double[]{3, 4, 5, 6, 7, 8, 7, 7};
-        double[] b = new double[]{0, 9, 8, 6, 4, 5, 1, 1};
-
-        int x = a.length;
-
-        double[] c1 = getCircularCorrelation_log_test(a, b);
-        double[] c2 = getCircularCorrelation(a, b);
-        for (int i = 0; i < x; ++i) {
-            System.out.printf("%.3f\t%.3f\n", c1[i], c2[i]);
         }
     }
 }

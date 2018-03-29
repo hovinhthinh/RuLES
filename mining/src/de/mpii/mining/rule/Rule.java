@@ -436,8 +436,7 @@ public class Rule {
                         varCode += R_POW[atom.pid] * E_POW[atom.value] * INSTANTIATED_SIGN * (atom.negated ?
                                 NEGATION_SIGN : 1) * (atom
                                 .reversed ? REVERSED_SIGN : 1);
-                    } else
-                    if (a instanceof UnaryAtom) {
+                    } else if (a instanceof UnaryAtom) {
                         UnaryAtom atom = (UnaryAtom) a;
                         varCode += R_POW[atom.pid] * UNARY_SIGN * (atom.negated ? NEGATION_SIGN : 1);
                     } else {

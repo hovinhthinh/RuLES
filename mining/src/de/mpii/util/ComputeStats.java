@@ -22,6 +22,62 @@ import java.util.logging.Logger;
 
 // Get input from AMIE for simplicity.
 public class ComputeStats {
+    public static final Logger LOGGER = Logger.getLogger(ComputeStats.class.getName());
+    public static KnowledgeGraph knowledgeGraph;
+
+    // args: <workspace> <client> <file> <out>
+    public static void main(String[] args) throws Exception {
+//        args = "../data/imdb transe ../data/imdb/amie.txt.conf tmp".split("\\s++");
+
+        EmbeddingClient embeddingClient;
+        if (args[1].equalsIgnoreCase("transe")) {
+            embeddingClient = new TransEClient(args[0], "L1");
+        } else if (args[1].equalsIgnoreCase("hole")) {
+            embeddingClient = new HolEClient(args[0]);
+        } else if (args[1].equalsIgnoreCase("ssp")) {
+            embeddingClient = new SSPClient(args[0]);
+        } else {
+            throw new RuntimeException("Invalid embedding model");
+        }
+
+        Infer.knowledgeGraph = knowledgeGraph = new KnowledgeGraph(args[0]);
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(args[2])));
+        PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(args[3]))));
+        String line;
+        int ruleCount = 0;
+
+        BlockingQueue<Pair<Rule, String>> queue = new LinkedBlockingQueue<Pair<Rule, String>>();
+        while ((line = in.readLine()) != null) {
+            ++ruleCount;
+            if (line.isEmpty()) {
+                break;
+            }
+            String arr[] = line.split("\t");
+            String rule = arr[0];
+            LOGGER.info("Loading rule: " + rule);
+            Rule r = Infer.parseRule(knowledgeGraph, rule);
+            queue.add(new Pair<>(r, rule));
+        }
+        in.close();
+
+        ExecutorService executor = Executors.newFixedThreadPool(50);
+        List<Future> futures = new ArrayList<>();
+        for (int i = 0; i < 50; ++i) {
+            futures.add(executor.submit(new Runner(embeddingClient, queue, out)));
+        }
+        try {
+            for (Future f : futures) {
+                f.get();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        executor.shutdown();
+
+        out.close();
+    }
+
     public static class Runner implements Runnable {
         EmbeddingClient client;
         BlockingQueue<Pair<Rule, String>> queue;
@@ -84,62 +140,5 @@ public class ComputeStats {
                 }
             }
         }
-    }
-
-    public static final Logger LOGGER = Logger.getLogger(ComputeStats.class.getName());
-
-    public static KnowledgeGraph knowledgeGraph;
-
-    // args: <workspace> <client> <file> <out>
-    public static void main(String[] args) throws Exception {
-//        args = "../data/imdb transe ../data/imdb/amie.txt.conf tmp".split("\\s++");
-
-        EmbeddingClient embeddingClient;
-        if (args[1].equalsIgnoreCase("transe")) {
-            embeddingClient = new TransEClient(args[0], "L1");
-        } else if (args[1].equalsIgnoreCase("hole")) {
-            embeddingClient = new HolEClient(args[0]);
-        } else if (args[1].equalsIgnoreCase("ssp")) {
-            embeddingClient = new SSPClient(args[0]);
-        } else {
-            throw new RuntimeException("Invalid embedding model");
-        }
-
-        Infer.knowledgeGraph = knowledgeGraph = new KnowledgeGraph(args[0]);
-
-        BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(args[2])));
-        PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(args[3]))));
-        String line;
-        int ruleCount = 0;
-
-        BlockingQueue<Pair<Rule, String>> queue = new LinkedBlockingQueue<Pair<Rule, String>>();
-        while ((line = in.readLine()) != null) {
-            ++ruleCount;
-            if (line.isEmpty()) {
-                break;
-            }
-            String arr[] = line.split("\t");
-            String rule = arr[0];
-            LOGGER.info("Loading rule: " + rule);
-            Rule r = Infer.parseRule(knowledgeGraph, rule);
-            queue.add(new Pair<>(r, rule));
-        }
-        in.close();
-
-        ExecutorService executor = Executors.newFixedThreadPool(50);
-        List<Future> futures = new ArrayList<>();
-        for (int i = 0; i < 50; ++i) {
-            futures.add(executor.submit(new Runner(embeddingClient, queue, out)));
-        }
-        try {
-            for (Future f : futures) {
-                f.get();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        executor.shutdown();
-
-        out.close();
     }
 }

@@ -15,16 +15,6 @@ import java.util.Collections;
  * Created by hovinhthinh on 3/7/18.
  */
 public class PredicateMRR {
-    static class Triple {
-        int s, p, o;
-
-        public Triple(int s, int p, int o) {
-            this.s = s;
-            this.p = p;
-            this.o = o;
-        }
-    }
-
     // args: <workspace>
     public static void main(String[] args) throws Exception {
         args = "../data/imdb".split("\\s++");
@@ -74,5 +64,15 @@ public class PredicateMRR {
             System.out.printf("%s\t%d\t%.3f\n", knowledgeGraph.relationsString[i], size, mrr);
         }
 
+    }
+
+    static class Triple {
+        int s, p, o;
+
+        public Triple(int s, int p, int o) {
+            this.s = s;
+            this.p = p;
+            this.o = o;
+        }
     }
 }

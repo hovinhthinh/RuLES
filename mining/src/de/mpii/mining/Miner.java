@@ -54,6 +54,19 @@ public class Miner implements Runnable {
         matchedRule = 0;
     }
 
+    public static ArrayList<SOInstance> samplingSOHeadInstances(ArrayList<SOInstance> instances) {
+        if (instances.size() > RuleStats.MRR_SAMPLE_SIZE) {
+            Collections.shuffle(instances);
+            ArrayList<SOInstance> result = new ArrayList<>();
+            for (int i = 0; i < RuleStats.MRR_SAMPLE_SIZE; ++i) {
+                result.add(instances.get(i));
+            }
+            return result;
+        } else {
+            return instances;
+        }
+    }
+
     private boolean duplicatedVar(int variableValue[], int newV) {
         for (int i = 0; i < variableValue.length; ++i) {
             if (variableValue[i] == newV) {
@@ -216,19 +229,6 @@ public class Miner implements Runnable {
                 }
                 recur(rule, position + 1, variableValues, stats);
             }
-        }
-    }
-
-    public static ArrayList<SOInstance> samplingSOHeadInstances(ArrayList<SOInstance> instances) {
-        if (instances.size() > RuleStats.MRR_SAMPLE_SIZE) {
-            Collections.shuffle(instances);
-            ArrayList<SOInstance> result = new ArrayList<>();
-            for (int i = 0; i < RuleStats.MRR_SAMPLE_SIZE; ++i) {
-                result.add(instances.get(i));
-            }
-            return result;
-        } else {
-            return instances;
         }
     }
 

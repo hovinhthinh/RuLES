@@ -17,31 +17,7 @@ import java.util.logging.Logger;
  * Created by hovinhthinh on 11/27/17.
  */
 public class InferDisjunction {
-    public static class FactEncodedSet {
-        private static final long BASE = 1000000000;
-        private static final long BASE2 = 10000;
-        private HashSet<Long> set = new HashSet<>();
-
-        public static long encode(int subject, int predicate1, int predicate2, int object) {
-            if (predicate1 > predicate2) {
-                int swap = predicate1;
-                predicate1 = predicate2;
-                predicate2 = swap;
-            }
-            return (((long) subject) * BASE + ((long) predicate1) * BASE2 + predicate2) * BASE + object;
-        }
-
-        public void addFact(int subject, int predicate1, int predicate2, int object) {
-            set.add(encode(subject, predicate1, predicate2, object));
-        }
-
-        public boolean containFact(int subject, int predicate1, int predicate2, int object) {
-            return set.contains(encode(subject, predicate1, predicate2, object));
-        }
-    }
-
     public static final Logger LOGGER = Logger.getLogger(InferDisjunction.class.getName());
-
     public static KnowledgeGraph knowledgeGraph;
 
     public static Rule parseRule(KnowledgeGraph graph, String ruleString) {
@@ -282,5 +258,28 @@ public class InferDisjunction {
                         "%.3f", total,
                 (double)
                         unknownNum / total, totalConf / top, totalInc / top));
+    }
+
+    public static class FactEncodedSet {
+        private static final long BASE = 1000000000;
+        private static final long BASE2 = 10000;
+        private HashSet<Long> set = new HashSet<>();
+
+        public static long encode(int subject, int predicate1, int predicate2, int object) {
+            if (predicate1 > predicate2) {
+                int swap = predicate1;
+                predicate1 = predicate2;
+                predicate2 = swap;
+            }
+            return (((long) subject) * BASE + ((long) predicate1) * BASE2 + predicate2) * BASE + object;
+        }
+
+        public void addFact(int subject, int predicate1, int predicate2, int object) {
+            set.add(encode(subject, predicate1, predicate2, object));
+        }
+
+        public boolean containFact(int subject, int predicate1, int predicate2, int object) {
+            return set.contains(encode(subject, predicate1, predicate2, object));
+        }
     }
 }
