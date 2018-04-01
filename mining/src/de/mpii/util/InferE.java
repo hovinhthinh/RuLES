@@ -23,7 +23,9 @@ public class InferE {
     // Process first <top> rules of the <file> (top by lines, not by scr)
     public static void main(String[] args) throws Exception {
 //        args = "../data/wiki44k/ ../exp3/wiki44k.embed.10.ec02 200 -s10 tmp".split("\\s++");
-//        args = "../data/wiki44k/ ../exp3/wiki44k.embed.10.ec02 20 tmp".split("\\s++");
+//        args = "../data/fb15k-new/ ../exp3/fb15.rumis.10.same.revised 20 tmp".split("\\s++");
+//        args = "../data/fb15k-new/ ../exp3/fb15.embed.10.ec.2.various 20 -s10 tmp".split("\\s++");
+
 
         int mins = 0;
         for (int i = 0; i < args.length; ++i) {
@@ -57,6 +59,7 @@ public class InferE {
         int unknownNum = 0;
         int total = 0;
         double averageQuality = 0;
+        double averageOldQuality = 0;
         double averageRevision = 0;
         ArrayList<Pair<Double, Integer>> spearman = new ArrayList<>();
         while ((line = in.readLine()) != null) {
@@ -69,7 +72,7 @@ public class InferE {
                 continue;
             }
             ++ruleCount;
-            LOGGER.info("Inferring rule: " + rule);
+            System.out.println("Inferring rule: " + rule);
             HashSet<SOInstance> instances = Infer.matchRule(r);
             System.out.println("body_support: " + instances.size());
             int pid = r.atoms.get(0).pid;
@@ -112,9 +115,17 @@ public class InferE {
                 }
             }
             HashSet<SOInstance> hornInstances = Infer.matchRule(horn);
+            int oldLocalPredict = 0;
+            int oldLocalNumTrue = 0;
             int totalPrevented = 0;
             int totalTruePrevented = 0;
             for (SOInstance so : hornInstances) {
+                if (!knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {
+                    ++oldLocalPredict;
+                    if (knowledgeGraph.idealFacts.containFact(so.subject, pid, so.object)) {
+                        ++oldLocalNumTrue;
+                    }
+                }
                 if (instances.contains(so)) {
                     continue;
                 }
@@ -126,6 +137,7 @@ public class InferE {
                     ++totalTruePrevented;
                 }
             }
+            averageOldQuality += ((double) oldLocalNumTrue) / oldLocalPredict;
             averageRevision += totalPrevented == 0 ? 0 : ((double) totalTruePrevented) / totalPrevented;
             // end of revision
             LOGGER.info(String.format("quality = %.3f", ((double) localNumTrue) / localPredict));
@@ -145,7 +157,8 @@ public class InferE {
         in.close();
         out.close();
         LOGGER.info(String.format("#predictions = %d, known_rate = %.3f", total, 1 - ((double) unknownNum / total)));
-        LOGGER.info(String.format("#average_quality = %.3f", averageQuality / top));
+        LOGGER.info(String.format("#average_quality = %.3f ; #avg_inc_quality = %.3f", averageQuality / top,
+                (averageQuality - averageOldQuality) / top));
         LOGGER.info(String.format("#average_revision = %.3f", averageRevision / top));
         LOGGER.info(String.format("Spearman = %.3f", spearCo));
         if (ruleCount != top) {
