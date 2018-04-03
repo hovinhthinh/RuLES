@@ -8,8 +8,8 @@ import java.util.*;
  * Created by hovinhthinh on 11/16/17.
  */
 public class RuleExtensionInfo {
-    public static final int UNARY_TYPES_TOP_LIMIT = 20;
-    public static final int INSTANTIATED_LINKS_TOP_LIMIT = 20;
+    public static final int UNARY_TYPES_TOP_LIMIT = Integer.MAX_VALUE;
+    public static final int INSTANTIATED_LINKS_TOP_LIMIT = 20; // To be fixed soon.
     public HashSet<Integer>[][] binaryClosingPids;
     public HashSet<Integer>[] binaryDanglingPids; // can have negative
     public HashMap<Integer, Integer>[] unaryTypes;
@@ -57,12 +57,12 @@ public class RuleExtensionInfo {
     public List<Integer> getTopTypesForVariable(int var) {
         ArrayList<Map.Entry<Integer, Integer>> arr = new ArrayList<>();
         arr.addAll(unaryTypes[var].entrySet());
-        Collections.sort(arr, new Comparator<Map.Entry<Integer, Integer>>() {
-            @Override
-            public int compare(Map.Entry<Integer, Integer> o1, Map.Entry<Integer, Integer> o2) {
-                return Integer.compare(o2.getValue(), o1.getValue());
-            }
-        });
+//        Collections.sort(arr, new Comparator<Map.Entry<Integer, Integer>>() {
+//            @Override
+//            public int compare(Map.Entry<Integer, Integer> o1, Map.Entry<Integer, Integer> o2) {
+//                return Integer.compare(o2.getValue(), o1.getValue());
+//            }
+//        });
         List<Integer> result = new LinkedList<>();
         for (int i = 0; i < arr.size(); ++i) {
             result.add(arr.get(i).getKey());

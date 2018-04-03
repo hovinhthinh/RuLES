@@ -10,6 +10,7 @@ import de.mpii.mining.atom.InstantiatedAtom;
 import de.mpii.mining.atom.UnaryAtom;
 import de.mpii.mining.graph.KnowledgeGraph;
 import de.mpii.mining.rule.*;
+import de.mpii.util.Infer;
 
 import java.io.PrintWriter;
 import java.util.*;
@@ -47,6 +48,7 @@ public class Miner implements Runnable {
             throw new RuntimeException("Invalid embedding model");
         }
         knowledgeGraph = new KnowledgeGraph(workspace);
+        Infer.knowledgeGraph = knowledgeGraph;
         ruleQueue = new RuleQueue(config.enqueueLimit);
         this.config = config;
         this.output = output;
@@ -294,6 +296,22 @@ public class Miner implements Runnable {
                     for (int pid = 0; pid < knowledgeGraph.nRelations; ++pid) {
                         if (r.stats.scr[pid] != -1) {
                             r.atoms.get(0).pid = pid;
+                            if (r.atoms.get(r.atoms.size() - 1).negated) {
+                                // CHECK POSITIVE HORN PART.
+                                r.atoms.get(r.atoms.size() - 1).negated = false;
+                                HashSet<SOInstance> instances = Infer.matchRule(r);
+                                boolean flag = true;
+                                for (SOInstance so : instances) {
+                                    if (knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {
+                                        flag = false;
+                                        break;
+                                    }
+                                }
+                                r.atoms.get(r.atoms.size() - 1).negated = true;
+                                if (!flag) {
+                                    continue;
+                                }
+                            }
                             String result = String.format(
                                     "%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\tsup:\t%d\tec:\t%.3f",
                                     r.getString(knowledgeGraph.relationsString, knowledgeGraph.typesString, knowledgeGraph.entitiesString),
