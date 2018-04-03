@@ -23,8 +23,8 @@ public class InferE {
     // Process first <top> rules of the <file> (top by lines, not by scr)
     public static void main(String[] args) throws Exception {
 //        args = "../data/wiki44k/ ../exp3/wiki44k.embed.10.ec02 200 -s10 tmp".split("\\s++");
-//        args = "../data/fb15k-new/ ../exp3/fb15.rumis.10.same.revised 20 tmp".split("\\s++");
-//        args = "../data/fb15k-new/ ../exp3/fb15.embed.10.ec.2.various 20 -s10 tmp".split("\\s++");
+//        args = "../data/fb15k-new/ ../exp3/fb15k.revision.embed 10 tmp".split("\\s++");
+//        args = "../data/wiki44k/ ../exp3/wiki44k.revision.embed 100 tmp".split("\\s++");
 
 
         int mins = 0;
@@ -159,7 +159,7 @@ public class InferE {
         LOGGER.info(String.format("#predictions = %d, known_rate = %.3f", total, 1 - ((double) unknownNum / total)));
         LOGGER.info(String.format("#average_quality = %.3f ; #avg_inc_quality = %.3f", averageQuality / top,
                 (averageQuality - averageOldQuality) / top));
-        LOGGER.info(String.format("#average_revision = %.3f", averageRevision / top));
+        LOGGER.info(String.format("#average_revision = %.3f", 1 - averageRevision / top));
         LOGGER.info(String.format("Spearman = %.3f", spearCo));
         if (ruleCount != top) {
             LOGGER.warning("Not enough number of requested rules");
