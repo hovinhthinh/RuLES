@@ -14,7 +14,7 @@ import java.util.*;
 
 public class RuleStats {
     // TODO: disable this bound.
-    public static final int MRR_SAMPLE_SIZE = 200;
+    public static final int MRR_SAMPLE_SIZE = 100;
     public int ruleSupport[], bodySupport;
     public double[] headCoverage, confidence, mrr, scr, ec;
     public HashSet<SOInstance> headInstances;
