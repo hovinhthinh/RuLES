@@ -11,19 +11,18 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by hovinhthinh on 4/3/18.
+ * Created by hovinhthinh on 4/4/18.
  */
-public class ExceptionPostFiltering {
+public class RUMISPostFiltering {
     public static KnowledgeGraph knowledgeGraph;
 
     // <workspace> <sorted_file_output_from_system>
-    public static final double EXCEPTION_CONFIDENCE = 0.1;
     public static final double HORN_MIN_CONF = 0.2;
     public static final double HORN_MAX_CONF = 0.8;
 
     public static void main(String[] args) throws Exception {
-        args = ("../data/fb15k-new/ ../exp3_new/xyzna4nv3nna1ec0mc.1hc.01ms10ew.3.exceptionpostfilter.sorted " +
-                "../exp3_new/fb15k.xyz.conf0208.ec01").split
+        args = ("../data/fb15k-new/ ../exp3_new/fb15.rumis.10 " +
+                "../exp3_new/fb15k.xyz.conf0208.rumis").split
                 ("\\s++");
         knowledgeGraph = Infer.knowledgeGraph = new KnowledgeGraph(args[0]);
 
@@ -64,18 +63,12 @@ public class ExceptionPostFiltering {
                 }
             }
             double hornConf = (double) hornSup / hornSO.size();
-            if (hornConf < HORN_MIN_CONF || hornConf > HORN_MAX_CONF) {
-                continue;
-            }
-            HashSet<SOInstance> exceptionSO = Infer.matchRule(r);
-
-            double econf = (double) (hornSO.size() - exceptionSO.size()) / (hornSO.size() - hornSup);
-            if (econf < EXCEPTION_CONFIDENCE) {
+            if (hornConf < HORN_MIN_CONF || hornConf > HORN_MAX_CONF || hornSup < 10) {
                 continue;
             }
 
-            System.out.println(line + "\teconf:" + "\t" + econf);
-            out.println(line + "\teconf:" + "\t" + econf);
+            System.out.println(line);
+            out.println(line);
             chosenHorn.add(hornString);
         }
         out.close();
