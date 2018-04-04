@@ -8,7 +8,7 @@ import java.util.*;
  * Created by hovinhthinh on 11/16/17.
  */
 public class RuleExtensionInfo {
-    public static final int UNARY_TYPES_TOP_LIMIT = 1000;
+    public static final int UNARY_TYPES_TOP_LIMIT = Integer.MAX_VALUE;
     public static final int INSTANTIATED_LINKS_TOP_LIMIT = 20; // To be fixed soon.
     public HashSet<Integer>[][] binaryClosingPids;
     public HashSet<Integer>[] binaryDanglingPids; // can have negative
