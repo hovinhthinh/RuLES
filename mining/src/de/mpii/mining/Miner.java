@@ -250,7 +250,7 @@ public class Miner implements Runnable {
 
         // If the monotonic part is closed, then set stats.
         if (r.closed) {
-            stats.simplify(knowledgeGraph, embeddingClient, config, config.disjunction && (r.atoms.size() < config
+            stats.simplify(r, knowledgeGraph, embeddingClient, config, config.disjunction && (r.atoms.size() < config
                     .maxNumAtoms ? true : false));
             r.stats = stats;
         }
@@ -296,22 +296,7 @@ public class Miner implements Runnable {
                     for (int pid = 0; pid < knowledgeGraph.nRelations; ++pid) {
                         if (r.stats.scr[pid] != -1) {
                             r.atoms.get(0).pid = pid;
-                            if (r.atoms.get(r.atoms.size() - 1).negated) {
-                                // CHECK POSITIVE HORN PART.
-                                r.atoms.get(r.atoms.size() - 1).negated = false;
-                                HashSet<SOInstance> instances = Infer.matchRule(r);
-                                boolean flag = true;
-                                for (SOInstance so : instances) {
-                                    if (knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {
-                                        flag = false;
-                                        break;
-                                    }
-                                }
-                                r.atoms.get(r.atoms.size() - 1).negated = true;
-                                if (!flag) {
-                                    continue;
-                                }
-                            }
+
                             String result = String.format(
                                     "%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\tsup:\t%d\tec:\t%.3f",
                                     r.getString(knowledgeGraph.relationsString, knowledgeGraph.typesString, knowledgeGraph.entitiesString),

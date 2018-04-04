@@ -101,7 +101,7 @@ public class RulePruner {
         return result;
     }
 
-    private static boolean goodExceptionCoverage(Rule r, int pid, MinerConfig config) {
+    public static boolean goodExceptionCoverage(Rule r, int pid, MinerConfig config) {
         if (r.getState() < 3) {
             // Last added atom is not exception then return true.
             return true;
@@ -117,10 +117,11 @@ public class RulePruner {
         if (r.stats == null) return false;
         boolean hasGoodHead = false;
         for (int i = 0; i < r.nRelations; ++i) {
-            // TODO: DEPRECATED: minHeadCoverage filter migrated to RuleStats.
+            // TODO: DEPRECATED: minHeadCoverage minExceptionCoverage filter migrated to RuleStats.
             if (r.stats.headCoverage[i] >= config.minHeadCoverage &&
-                    (r.stats.scr[i] > r.sourceScr[i] + 1e-3) && r.sourceScr[i] != -1 &&
-                    goodExceptionCoverage(r, i, config)) {
+                    (r.stats.scr[i] > r.sourceScr[i] + 1e-3) && r.sourceScr[i] != -1
+//                    && goodExceptionCoverage(r, i, config)
+                    ) {
                 hasGoodHead = true;
             } else {
                 r.stats.scr[i] = -1;
