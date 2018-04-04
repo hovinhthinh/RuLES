@@ -37,6 +37,15 @@ public class RuleStats {
         headInstances = new HashSet<>();
     }
 
+    public boolean goodExceptionCoverage(Rule r, int pid, MinerConfig config) {
+        if (r.getState() < 3) {
+            // Last added atom is not exception then return true.
+            return true;
+        }
+        ec[pid] = 1 - headCoverage[pid] / r.sourceHeadCoverage[pid];
+        return ec[pid] >= config.minExceptionCoverage;
+    }
+
     public void simplify(Rule r, KnowledgeGraph graph, EmbeddingClient embeddingClient, MinerConfig config, boolean
             withDisjunction) {
         bodySupport = headInstances.size();
@@ -96,7 +105,7 @@ public class RuleStats {
                 if (headCoverage[pid] >= config.minHeadCoverage) {
                     // Call embedding service.
                     if (bodySupport == ruleSupport[pid] || confidence[pid] < config.minConf || ruleSupport[pid] <
-                            config.minSupport || !RulePruner.goodExceptionCoverage(r, pid, config)) {
+                            config.minSupport || !goodExceptionCoverage(r, pid, config)) {
                         // Applying the rule doesn't extend the kg.
                         // Rule is not confidence (double check to reduce complexity when calling embedding model)
                         // Rule does not have enough support.

@@ -101,15 +101,6 @@ public class RulePruner {
         return result;
     }
 
-    public static boolean goodExceptionCoverage(Rule r, int pid, MinerConfig config) {
-        if (r.getState() < 3) {
-            // Last added atom is not exception then return true.
-            return true;
-        }
-        r.stats.ec[pid] = 1 - r.stats.headCoverage[pid] / r.sourceHeadCoverage[pid];
-        return r.stats.ec[pid] >= config.minExceptionCoverage;
-    }
-
     private static boolean isContentPrunedInternal(Rule r, MinerConfig config) {
         if (!r.extensible) {
             return true;
