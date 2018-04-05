@@ -38,7 +38,8 @@ public class Rule {
     // If sourceScr == -1, it is filtered.
     public double[] sourceScr;
 
-    public double[] sourceHeadCoverage;
+    public int[] sourceRuleSupport;
+    public int sourceBodySupport;
 
     public boolean extensible;
 
@@ -56,7 +57,7 @@ public class Rule {
 
     public Rule(int nRelations) {
         sourceScr = null;
-        sourceHeadCoverage = null;
+        sourceRuleSupport = null;
         this.nRelations = nRelations;
         nVariables = 0;
         atoms = new ArrayList<>();
@@ -264,25 +265,26 @@ public class Rule {
     public Rule cloneRule() {
         Rule r = new Rule(nRelations);
         r.sourceScr = new double[nRelations];
-        r.sourceHeadCoverage = new double[nRelations];
-        Arrays.fill(r.sourceHeadCoverage, 1e9); // Some very big number
+        r.sourceRuleSupport = new int[nRelations];
+        Arrays.fill(r.sourceRuleSupport, Integer.MAX_VALUE); // Some very big number
         if (stats != null) {
             for (int i = 0; i < nRelations; ++i) {
                 r.sourceScr[i] = stats.scr[i];
-                r.sourceHeadCoverage[i] = stats.headCoverage[i];
+                r.sourceRuleSupport[i] = stats.ruleSupport[i];
             }
+            r.sourceBodySupport = stats.bodySupport;
         } else {
             if (sourceScr != null) {
                 for (int i = 0; i < nRelations; ++i) {
                     r.sourceScr[i] = sourceScr[i];
                 }
             }
-            if (sourceHeadCoverage != null) {
+            if (sourceRuleSupport != null) {
                 // TODO
                 // This piece of code should not be executed because exception is only added after the rule is actually
                 // matched.
                 for (int i = 0; i < nRelations; ++i) {
-                    r.sourceHeadCoverage[i] = sourceHeadCoverage[i];
+                    r.sourceRuleSupport[i] = sourceRuleSupport[i];
                 }
             }
         }

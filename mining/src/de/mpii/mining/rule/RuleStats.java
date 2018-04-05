@@ -42,7 +42,9 @@ public class RuleStats {
             // Last added atom is not exception then return true.
             return true;
         }
-        ec[pid] = 1 - headCoverage[pid] / r.sourceHeadCoverage[pid];
+        if (ec[pid] == -1) {
+            ec[pid] = ((double) r.sourceBodySupport - bodySupport) / (r.sourceBodySupport - r.sourceRuleSupport[pid]);
+        }
         return ec[pid] >= config.minExceptionCoverage;
     }
 
