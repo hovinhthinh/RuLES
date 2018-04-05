@@ -22,10 +22,13 @@ public class InferE {
     // args: <workspace> <file> <top> <new_facts> <predicate>
     // Process first <top> rules of the <file> (top by lines, not by scr)
     public static void main(String[] args) throws Exception {
-//        args = "../data/wiki44k/ ../exp3/wiki44k.embed.10.ec02 200 -s10 tmp".split("\\s++");
-//        args = "../data/fb15k-new/ ../exp3/fb15k.revision.embed 10 tmp".split("\\s++");
-//        args = "../data/wiki44k/ ../exp3/wiki44k.revision.embed 100 tmp".split("\\s++");
 
+        args = "../data/fb15k-new/ ../exp3_new/fb15k.xyz.conf08.ec01 500 ../exp3_new/fb.rules.500".split("\\s++");
+//        args = "../data/fb15k-new/ ../exp3_new/fb15k.xyz.conf08.rumis 500 ../exp3_new/fb.rumis.500".split("\\s++");
+
+
+//        args = "../data/wiki44k/ ../exp3_new/wiki.xyz.conf08.ec01 500 ../exp3_new/wiki.rules.500".split("\\s++");
+//        args = "../data/wiki44k/ ../exp3_new/wiki.xyz.conf08.rumis 500 ../exp3_new/wiki.rumis.500".split("\\s++");
 
         int mins = 0;
         for (int i = 0; i < args.length; ++i) {
@@ -47,7 +50,9 @@ public class InferE {
         knowledgeGraph = Infer.knowledgeGraph = new KnowledgeGraph(args[0]);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(args[1])));
-        PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(args[3]))));
+        PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(args[3] + ".predict"))));
+        PrintWriter outr = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(args[3] + "" +
+                ".remove"))));
         String line;
         int ruleCount = 0;
         String predicate = null;
@@ -55,13 +60,16 @@ public class InferE {
             predicate = args[4];
         }
         KnowledgeGraph.FactEncodedSet mined = new KnowledgeGraph.FactEncodedSet();
-//        KnowledgeGraph.FactEncodedSet minedHorn = new KnowledgeGraph.FactEncodedSet();
+        KnowledgeGraph.FactEncodedSet minedHorn = new KnowledgeGraph.FactEncodedSet();
+        ArrayList<PredicateMRR.Triple> minedHornFacts = new ArrayList<>();
+
         int unknownNum = 0;
         int total = 0;
         double averageQuality = 0;
         double averageOldQuality = 0;
         double averageRevision = 0;
         ArrayList<Pair<Double, Integer>> spearman = new ArrayList<>();
+
         while ((line = in.readLine()) != null) {
             if (line.isEmpty() || ruleCount >= top) {
                 break;
@@ -101,6 +109,7 @@ public class InferE {
                     ++support;
                 }
             }
+            System.out.println("support: " + support);
 
             if (localPredict == 0 || support < mins) {
                 --ruleCount;
@@ -119,12 +128,20 @@ public class InferE {
             int oldLocalNumTrue = 0;
             int totalPrevented = 0;
             int totalTruePrevented = 0;
+            int hornSp = 0;
             for (SOInstance so : hornInstances) {
                 if (!knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {
+                    if (!minedHorn.containFact(so.subject, pid, so.object)) {
+                        minedHorn.addFact(so.subject, pid, so.object);
+                        minedHornFacts.add(new PredicateMRR.Triple(so.subject, pid, so.object));
+                    }
+
                     ++oldLocalPredict;
                     if (knowledgeGraph.idealFacts.containFact(so.subject, pid, so.object)) {
                         ++oldLocalNumTrue;
                     }
+                } else {
+                    ++hornSp;
                 }
                 if (instances.contains(so)) {
                     continue;
@@ -137,10 +154,14 @@ public class InferE {
                     ++totalTruePrevented;
                 }
             }
+            if (hornSp != support) {
+                throw new RuntimeException("invalid exception");
+            }
+            System.out.println(String.format("horn_conf = %.3f", ((double) support) / hornInstances.size()));
             averageOldQuality += ((double) oldLocalNumTrue) / oldLocalPredict;
             averageRevision += totalPrevented == 0 ? 0 : ((double) totalTruePrevented) / totalPrevented;
             // end of revision
-            LOGGER.info(String.format("quality = %.3f", ((double) localNumTrue) / localPredict));
+            System.out.println(String.format("quality = %.3f", ((double) localNumTrue) / localPredict));
             spearman.add(new Pair<>(((double) localNumTrue) / localPredict, 1 + top - ruleCount));
         }
         Collections.sort(spearman, new Comparator<Pair<Double, Integer>>() {
@@ -156,13 +177,31 @@ public class InferE {
         spearCo = 1 - 6 * spearCo / top / (top * top - 1);
         in.close();
         out.close();
-        LOGGER.info(String.format("#predictions = %d, known_rate = %.3f", total, 1 - ((double) unknownNum / total)));
-        LOGGER.info(String.format("#average_quality = %.3f ; #avg_inc_quality = %.3f", averageQuality / top,
+
+        System.out.println(String.format("#predictions = %d, known_rate = %.3f", total, 1 - ((double) unknownNum / total)));
+        System.out.println(String.format("#average_quality = %.3f ; #avg_inc_quality = %.3f", averageQuality / top,
                 (averageQuality - averageOldQuality) / top));
-        LOGGER.info(String.format("#average_revision = %.3f", 1 - averageRevision / top));
-        LOGGER.info(String.format("Spearman = %.3f", spearCo));
+        int totalR = 0;
+        int trueT = 0;
+        for (PredicateMRR.Triple t : minedHornFacts) {
+            if (mined.containFact(t.s, t.p, t.o)) {
+                continue;
+            }
+            ++totalR;
+            boolean isTrue = knowledgeGraph.idealFacts.containFact(t.s, t.p, t.o);
+            if (isTrue) {
+                ++trueT;
+            }
+            outr.printf("%s\t%s\t%s\t%s\n", knowledgeGraph.entitiesString[t.s], knowledgeGraph
+                    .relationsString[t.p], knowledgeGraph.entitiesString[t.o], (isTrue) ?
+                    "TRUE" : "null");
+        }
+        outr.close();
+        System.out.println(String.format("#removed = %d, removed_true_rate = %.3f", totalR, (double)trueT / totalR));
+        System.out.println(String.format("#average_revision = %.3f", 1 - averageRevision / top));
+        System.out.println(String.format("Spearman = %.3f", spearCo));
         if (ruleCount != top) {
-            LOGGER.warning("Not enough number of requested rules");
+            System.out.println("Not enough number of requested rules");
         }
     }
 }

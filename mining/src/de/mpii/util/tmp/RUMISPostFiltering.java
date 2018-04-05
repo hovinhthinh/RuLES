@@ -17,12 +17,14 @@ public class RUMISPostFiltering {
     public static KnowledgeGraph knowledgeGraph;
 
     // <workspace> <sorted_file_output_from_system>
-    public static final double HORN_MIN_CONF = 0.2;
+    public static final double HORN_MIN_CONF = 0.0;
     public static final double HORN_MAX_CONF = 0.8;
 
     public static void main(String[] args) throws Exception {
-        args = ("../data/fb15k-new/ ../exp3_new/fb15.rumis.10 " +
-                "../exp3_new/fb15k.xyz.conf0208.rumis").split
+//        args = ("../data/fb15k-new/ ../exp3_new/fb15.rumis.10 " +
+//                "../exp3_new/fb15k.xyz.conf08.rumis").split
+//                ("\\s++");
+        args = ("../data/wiki44k/ ../exp3_new/wiki44k.rumis ../exp3_new/wiki.xyz.conf08.rumis").split
                 ("\\s++");
         knowledgeGraph = Infer.knowledgeGraph = new KnowledgeGraph(args[0]);
 

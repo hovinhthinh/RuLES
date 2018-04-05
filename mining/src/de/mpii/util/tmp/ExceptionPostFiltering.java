@@ -17,14 +17,17 @@ public class ExceptionPostFiltering {
     public static KnowledgeGraph knowledgeGraph;
 
     // <workspace> <sorted_file_output_from_system>
-    public static final double EXCEPTION_CONFIDENCE = 0.1;
-    public static final double HORN_MIN_CONF = 0.2;
+    public static final double EXCEPTION_CONFIDENCE = 0.05;
+    public static final double HORN_MIN_CONF = 0.0;
     public static final double HORN_MAX_CONF = 0.8;
 
     public static void main(String[] args) throws Exception {
-        args = ("../data/fb15k-new/ ../exp3_new/xyzna4nv3nna1ec0mc.1hc.01ms10ew.3.exceptionpostfilter.sorted " +
-                "../exp3_new/fb15k.xyz.conf0208.ec01").split
+        args = ("../data/fb15k-new/ ../exp3_new/fb.xyzna4nv3nna1ec0mc.1hc.01ms10ew.3.exceptionpostfilter.sorted " +
+                "../exp3_new/fb15k.xyz.conf08.ec01").split
                 ("\\s++");
+//        args = ("../data/wiki44k/ ../exp3_new/wiki.na4nv3nna1ec0mc.1hc.01ms10ew.3.exceptionpostfilter.sorted " +
+//                "../exp3_new/wiki.xyz.conf08.ec01").split
+//                ("\\s++");
         knowledgeGraph = Infer.knowledgeGraph = new KnowledgeGraph(args[0]);
 
         PrintWriter out = IO.openForWrite(args[2]);
