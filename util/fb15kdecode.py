@@ -1,7 +1,7 @@
 import sys
 
 map = {}
-with open("util/fb15k_id2info") as f:
+with open("./data/fb15k-new/id2info") as f:
     for line in f:
         arr = line.split("\t")
         map[arr[0]] = arr[1]
