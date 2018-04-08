@@ -46,7 +46,9 @@ To run SSP embedding model, we can attach additional textual description to file
 ```
 in which, `<entity>` shouldn't have any space in between.
 
-We prepared the workspace for IMDB dataset at `./data/imdb/`, and FB15K(with entities description) at `./data/fb15k/`
+We prepared the workspace for IMDB dataset at `./data/imdb/`, FB15K(with entities description) at `./data/fb15k-new/`
+ and WIKI44K(with entities description) at `./data/wiki44k/`
+and
 ### 2. Generate training and test set
 ```
 $ bash gen_data.sh <workspace> <training_ratio>
@@ -59,21 +61,21 @@ We can choose run each of these models:
 $ bash run_transe.sh --workspace <workspace> --margin <margin> --lr <starting_learning_rate> --ncomp
 <embedding_dimensions>
 # Ex: $ bash run_transe.sh --workspace ./data/imdb/ --margin 3 --lr 0.1 --ncomp 50
-# Ex: $ bash run_transe.sh --workspace ./data/fb15k/ --margin 1 --lr 0.1 --ncomp 50
+# Ex: $ bash run_transe.sh --workspace ./data/fb15k-new/ --margin 1 --lr 0.1 --ncomp 50
 ```
 The embedding model will run and the embedding data will be stored in file `transe` in the workspace folder.
 #### 3.2. HolE with AdaGrad
 ```
 $ bash run_hole.sh --workspace <workspace> --margin <margin> --lr <starting_learning_rate> --ncomp <embedding_dimensions>
 # Ex: $ bash run_hole.sh --workspace ./data/imdb/ --margin 0.2 --lr 0.1 --ncomp 128
-# Ex: $ bash run_hole.sh --workspace ./data/fb15k/ --margin 0.15 --lr 0.1 --ncomp 128
+# Ex: $ bash run_hole.sh --workspace ./data/fb15k-new/ --margin 0.15 --lr 0.1 --ncomp 128
 # It is recommmended to used <embedding_dimensions> = 2^x to speed up computation of Fast Fourier Transform.
 ```
 The embedding model will run and the embedding data will be stored in file `hole` in the workspace folder.
 #### 3.3. SSP
 ```
 $ ./embedding/ssp_main <workspace> <embedding_dimensions> <learning_rate> <margin> <balance_factor> <joint_weight>
-# Ex: $ ./embedding/ssp_main ./data/fb15k/ 100 0.001 1.8 0.2 0.1
+# Ex: $ ./embedding/ssp_main ./data/fb15k-new/ 100 0.001 1.8 0.2 0.1
 # This will run the SSP model on FB15K with Joint setting. A joint_weight = 0 indicates the Standard setting.
 ```
 The embedding model will run and the embedding data will be stored in file `ssp` in the workspace folder.
