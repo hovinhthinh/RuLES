@@ -102,7 +102,7 @@ public class ComputeStats {
                     return;
                 }
                 Rule r = front.first;
-                HashSet<SOInstance> instances = Infer.matchRule(r);
+                HashSet<SOInstance> instances = Infer.matchRule(r, true);
                 int pid = r.atoms.get(0).pid;
                 double mrr = 0;
                 int sup = 0;

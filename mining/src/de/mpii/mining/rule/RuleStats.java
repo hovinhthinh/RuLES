@@ -57,7 +57,7 @@ public class RuleStats {
             } else {
                 if (r.atoms.get(r.atoms.size() - 1).negated) { // CHECK SUITABLE EXCEPTION.
                     r.atoms.get(r.atoms.size() - 1).negated = false;
-                    HashSet<SOInstance> instances = Infer.matchRule(r);
+                    HashSet<SOInstance> instances = Infer.matchRule(r, true);
                     boolean flag = true;
                     for (SOInstance so : instances) {
                         if (graph.trueFacts.containFact(so.subject, pid, so.object)) {

@@ -111,7 +111,8 @@ public class Infer {
         return false;
     }
 
-    private static void recur(Rule rule, int position, int variableValues[], HashSet<SOInstance> headInstances) {
+    private static void recur(Rule rule, int position, int variableValues[], HashSet<SOInstance> headInstances,
+                              boolean preventDuplicateVar) {
         if (position == rule.atoms.size()) {
             headInstances.add(new SOInstance(variableValues[0], variableValues[1]));
             return;
@@ -130,17 +131,17 @@ public class Infer {
                 if (hasEdge == a.negated) {
                     return;
                 }
-                recur(rule, position + 1, variableValues, headInstances);
+                recur(rule, position + 1, variableValues, headInstances, preventDuplicateVar);
             }
         } else if (a instanceof UnaryAtom) {
             if (variableValues[a.sid] == -1) {
                 // This case only happens for positive atom.
                 for (int t : knowledgeGraph.typeInstances[a.pid]) {
-                    if (duplicatedVar(variableValues, t)) {
+                    if (preventDuplicateVar && duplicatedVar(variableValues, t)) {
                         continue;
                     }
                     variableValues[a.sid] = t;
-                    recur(rule, position + 1, variableValues, headInstances);
+                    recur(rule, position + 1, variableValues, headInstances, preventDuplicateVar);
                     variableValues[a.sid] = -1;
                 }
             } else {
@@ -148,19 +149,20 @@ public class Infer {
                 if (hasType == a.negated) {
                     return;
                 }
-                recur(rule, position + 1, variableValues, headInstances);
+                recur(rule, position + 1, variableValues, headInstances, preventDuplicateVar);
             }
         } else {
             BinaryAtom atom = (BinaryAtom) a;
             if (variableValues[atom.sid] == -1 && variableValues[atom.oid] == -1) {
                 for (SOInstance so : knowledgeGraph.pidSOInstances[atom.pid]) {
-                    if (duplicatedVar(variableValues, so.subject) || duplicatedVar(variableValues, so.object) || so
-                            .subject == so.object) {
+                    if (preventDuplicateVar && (duplicatedVar(variableValues, so.subject) || duplicatedVar
+                            (variableValues, so.object) || so
+                            .subject == so.object)) {
                         continue;
                     }
                     variableValues[atom.sid] = so.subject;
                     variableValues[atom.oid] = so.object;
-                    recur(rule, position + 1, variableValues, headInstances);
+                    recur(rule, position + 1, variableValues, headInstances, preventDuplicateVar);
                     variableValues[atom.sid] = variableValues[atom.oid] = -1;
                 }
             } else if (variableValues[atom.sid] == -1 || variableValues[atom.oid] == -1) {
@@ -169,11 +171,11 @@ public class Infer {
                         if (e.pid != atom.pid) {
                             continue;
                         }
-                        if (duplicatedVar(variableValues, e.oid)) {
+                        if (preventDuplicateVar && duplicatedVar(variableValues, e.oid)) {
                             continue;
                         }
                         variableValues[atom.oid] = e.oid;
-                        recur(rule, position + 1, variableValues, headInstances);
+                        recur(rule, position + 1, variableValues, headInstances, preventDuplicateVar);
                         variableValues[atom.oid] = -1;
                     }
                 } else {
@@ -181,11 +183,11 @@ public class Infer {
                         if (-e.pid - 1 != atom.pid) {
                             continue;
                         }
-                        if (duplicatedVar(variableValues, e.oid)) {
+                        if (preventDuplicateVar && duplicatedVar(variableValues, e.oid)) {
                             continue;
                         }
                         variableValues[atom.sid] = e.oid;
-                        recur(rule, position + 1, variableValues, headInstances);
+                        recur(rule, position + 1, variableValues, headInstances, preventDuplicateVar);
                         variableValues[atom.sid] = -1;
                     }
                 }
@@ -195,16 +197,16 @@ public class Infer {
                 if (hasFact == atom.negated) {
                     return;
                 }
-                recur(rule, position + 1, variableValues, headInstances);
+                recur(rule, position + 1, variableValues, headInstances, preventDuplicateVar);
             }
         }
     }
 
-    public static HashSet<SOInstance> matchRule(Rule r) {
+    public static HashSet<SOInstance> matchRule(Rule r, boolean preventDuplicateVar) {
         HashSet<SOInstance> headInstances = new HashSet<>();
         int[] variableValues = new int[r.nVariables];
         Arrays.fill(variableValues, -1);
-        recur(r, 1, variableValues, headInstances);
+        recur(r, 1, variableValues, headInstances, preventDuplicateVar);
 
         return headInstances;
     }
@@ -257,7 +259,7 @@ public class Infer {
             }
             ++ruleCount;
             LOGGER.info("Inferring rule: " + rule);
-            HashSet<SOInstance> instances = matchRule(r);
+            HashSet<SOInstance> instances = matchRule(r, false);
             System.out.println("body_support: " + instances.size());
             int pid = r.atoms.get(0).pid;
             int localNumTrue = 0;

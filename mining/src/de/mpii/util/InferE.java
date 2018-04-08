@@ -81,7 +81,7 @@ public class InferE {
             }
             ++ruleCount;
             System.out.println("Inferring rule: " + rule);
-            HashSet<SOInstance> instances = Infer.matchRule(r);
+            HashSet<SOInstance> instances = Infer.matchRule(r, false);
             System.out.println("body_support: " + instances.size());
             int pid = r.atoms.get(0).pid;
             int localNumTrue = 0;
@@ -123,7 +123,7 @@ public class InferE {
                     horn.atoms.remove(i);
                 }
             }
-            HashSet<SOInstance> hornInstances = Infer.matchRule(horn);
+            HashSet<SOInstance> hornInstances = Infer.matchRule(horn, false);
             int oldLocalPredict = 0;
             int oldLocalNumTrue = 0;
             int totalPrevented = 0;

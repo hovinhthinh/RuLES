@@ -46,7 +46,7 @@ public class SpearmanPerSupport {
             String rule = arr[0];
             Rule r = Infer.parseRule(knowledgeGraph, rule);
             System.out.println("Inferring rule: " + rule);
-            HashSet<SOInstance> instances = Infer.matchRule(r);
+            HashSet<SOInstance> instances = Infer.matchRule(r, true);
             int pid = r.atoms.get(0).pid;
             int localNumTrue = 0;
             int localPredict = 0;

@@ -76,7 +76,7 @@ public class GenXYZ {
                     return;
                 }
                 Rule r = front.first;
-                HashSet<SOInstance> instances = Infer.matchRule(r);
+                HashSet<SOInstance> instances = Infer.matchRule(r, true);
                 int pid = r.atoms.get(0).pid;
                 int sup = 0;
                 int pcaBodySup = 0;

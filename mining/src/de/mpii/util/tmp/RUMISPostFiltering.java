@@ -57,7 +57,7 @@ public class RUMISPostFiltering {
                 }
             }
 
-            HashSet<SOInstance> hornSO = Infer.matchRule(horn);
+            HashSet<SOInstance> hornSO = Infer.matchRule(horn, true);
             int hornSup = 0;
             for (SOInstance so : hornSO) {
                 if (knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {

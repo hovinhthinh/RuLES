@@ -59,7 +59,7 @@ public class ExceptionPostFiltering {
                 }
             }
 
-            HashSet<SOInstance> hornSO = Infer.matchRule(horn);
+            HashSet<SOInstance> hornSO = Infer.matchRule(horn, true);
             int hornSup = 0;
             for (SOInstance so : hornSO) {
                 if (knowledgeGraph.trueFacts.containFact(so.subject, pid, so.object)) {
@@ -70,7 +70,7 @@ public class ExceptionPostFiltering {
             if (hornConf < HORN_MIN_CONF || hornConf > HORN_MAX_CONF) {
                 continue;
             }
-            HashSet<SOInstance> exceptionSO = Infer.matchRule(r);
+            HashSet<SOInstance> exceptionSO = Infer.matchRule(r, true);
 
             double econf = (double) (hornSO.size() - exceptionSO.size()) / (hornSO.size() - hornSup);
             if (econf < EXCEPTION_CONFIDENCE) {
