@@ -46,7 +46,7 @@ public class Main {
         options.addOption(option);
 
         // minSupport
-        option = new Option("ms", "min_support", true, "Min support of rule (default: 2)");
+        option = new Option("ms", "min_support", true, "Min support of rule (default: 10)");
         option.setRequired(false);
         options.addOption(option);
 
@@ -62,7 +62,7 @@ public class Main {
         options.addOption(option);
 
         // maxNumAtoms
-        option = new Option("na", "max_num_atom", true, "Maximum number of atoms (default: 4)");
+        option = new Option("na", "max_num_atom", true, "Maximum number of atoms (default: 3)");
         option.setRequired(false);
         options.addOption(option);
 
@@ -79,7 +79,7 @@ public class Main {
         options.addOption(option);
 
         // maxNumExceptionAtoms
-        option = new Option("nna", "max_num_neg_atom", true, "Maximum number of exception atoms (default: 1)");
+        option = new Option("nna", "max_num_neg_atom", true, "Maximum number of exception atoms (default: 0)");
         option.setRequired(false);
         options.addOption(option);
 
@@ -112,8 +112,9 @@ public class Main {
         option.setRequired(false);
         options.addOption(option);
 
-        // minExceptionCoverage
-        option = new Option("ec", "min_ec", true, "Minimum exception coverage of adding exception atom (default: 0.1)");
+        // minExceptionConfidence
+        option = new Option("ec", "min_ec", true, "Minimum exception confidence of adding exception atom (default: 0" +
+                ".05)");
         option.setRequired(false);
         options.addOption(option);
 
@@ -206,7 +207,7 @@ public class Main {
         }
         ov = cmd.getOptionValue("ec");
         if (ov != null) {
-            config.minExceptionCoverage = Double.parseDouble(ov);
+            config.minExceptionConfidence = Double.parseDouble(ov);
         }
         ov = cmd.getOptionValue("ew");
         if (ov != null) {

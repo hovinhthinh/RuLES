@@ -45,7 +45,7 @@ public class RuleStats {
         if (ec[pid] == -1) {
             ec[pid] = ((double) r.sourceBodySupport - bodySupport) / (r.sourceBodySupport - r.sourceRuleSupport[pid]);
         }
-        return ec[pid] >= config.minExceptionCoverage;
+        return ec[pid] >= config.minExceptionConfidence;
     }
 
     public void simplify(Rule r, KnowledgeGraph graph, EmbeddingClient embeddingClient, MinerConfig config, boolean

@@ -14,20 +14,20 @@ public class MinerConfig {
     public int maxVariableDegree = 3; // for rules with disjunction, second head atom is ignored for computing variable
     // degree.
 
-    public int maxNumAtoms = 4;
+    public int maxNumAtoms = 3;
     public int maxNumUnaryPositiveAtoms = 0;
     public int maxNumBinaryPositiveAtoms = INF;
-    public int maxNumExceptionAtoms = 1;
+    public int maxNumExceptionAtoms = 0;
     public int maxNumUnaryExceptionAtoms = 1;
     public int maxNumBinaryExceptionAtoms = 1;
     public int maxNumInstantiatedExceptionAtoms = 0;
     public int maxUniquePredicateOccurrence = 2;
     public double minConf = 0.1;
-    public int minSupport = 2;
+    public int minSupport = 10;
 
     // Content prune options.
     public double minHeadCoverage = 0.01;
-    public double minExceptionCoverage = 0.1;
+    public double minExceptionConfidence = 0.05;
 
     // Mining options.
     public int enqueueLimit = 100000000;
@@ -56,7 +56,7 @@ public class MinerConfig {
         System.out.println("maxNumInstantiatedExceptionAtoms=" + maxNumInstantiatedExceptionAtoms);
         System.out.println("maxUniquePredicateOccurrence=" + maxUniquePredicateOccurrence);
         System.out.println("minHeadCoverage=" + minHeadCoverage);
-        System.out.println("minExceptionCoverage=" + minExceptionCoverage);
+        System.out.println("minExceptionConfidence=" + minExceptionConfidence);
         System.out.println("embeddingWeight=" + embeddingWeight);
         System.out.println("usePCAConf=" + usePCAConf);
         System.out.println("numWorkers=" + numWorkers);

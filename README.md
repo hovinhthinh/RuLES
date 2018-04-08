@@ -94,20 +94,20 @@ Missing required options: w, em
 usage: utility-name
  -w,--workspace <arg>                    Path to workspace
  -o,--output <arg>                       Output file path (default: '<workspace>/rules.txt')
- -ms,--min_support <arg>                 Min support of rule (default: 2)
+ -ms,--min_support <arg>                 Min support of rule (default: 10)
  -mc,--min_conf <arg>                    Min confidence of rule (not counting mrr) (default: 0.1)
  -nv,--max_num_var <arg>                 Maximum number of variables (default: 3)
  -vd,--max_var_deg <arg>                 Maximum variable degree (number of predicates having the same variable) (default: 3)
- -na,--max_num_atom <arg>                Maximum number of atoms (default: 4)
+ -na,--max_num_atom <arg>                Maximum number of atoms (default: 3)
  -nbpa,--max_num_binary_pos_atom <arg>   Maximum number of binary positive atoms (default: INF)
  -nupa,--max_num_unary_pos_atom <arg>    Maximum number of unary positive atoms (default: 0)
- -nna,--max_num_neg_atom <arg>           Maximum number of exception atoms (default: 1)
+ -nna,--max_num_neg_atom <arg>           Maximum number of exception atoms (default: 0)
  -nbna,--max_num_binary_neg_atom <arg>   Maximum number of binary exception atoms (default: 1)
  -nina,--max_num_inst_neg_atom <args>    Maximum number of instantiated exception atoms (default: 0)
  -nuna,--max_num_unary_neg_atom <arg>    Maximum number of unary exception atoms (default: 1)
  -nupo,--max_num_uniq_pred_occur <arg>   Maximum number of occurrence of each unique predicate (default: 2)
  -hc,--min_hc <arg>                      Minimum head coverage of mined rules (default: 0.01)
- -ec,--min_ec <arg>                      Minimum exception coverage of adding exception atom (default: 0.1)
+ -ec,--min_ec <arg>                      Minimum exception confidence of adding exception atom (default: 0.05)
  -em,--embedding_model <arg>             Embedding model ('transe'/'hole'/'ssp')
  -ew,--embedding_weight <arg>            Weight of embedding in score function (default: 0.3)
  -pca,--use_pca_conf                     Use pca confidence instead of standard confidence
@@ -129,7 +129,7 @@ $ bash infer.sh <workspace> <rulesfile> <numrules> <outputfacts>
 This will infer new rules and write to `<outputfacts>`, rules from top `<numrules>` lines will be processed, hence,
 remember to use `<rulesfile>`, which contains sorted rules.
 #### 5.2. Infer facts with disjunction
-(Not completed editting)
+(experimental)
 ```
 $ bash infer_dj.sh <workspace> <rulesfile> <numrules> <outputfacts>
 # Ex: $ bash infer_dj.sh ./data/imdb/ ./data/imdb/rules.txt.sorted 100 ./data/imdb/new_facts.txt
