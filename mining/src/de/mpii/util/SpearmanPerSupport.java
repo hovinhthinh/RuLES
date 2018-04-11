@@ -30,7 +30,7 @@ public class SpearmanPerSupport {
     static KnowledgeGraph knowledgeGraph;
 
     public static void main(String[] args) {
-//        args = "../data/wiki44k/ ../data/wiki44k/xyz.input.small_sup.stat 0.3".split("\\s++");
+        args = "../data/wiki44k/ ../data/wiki44k/xyz.input.small_sup.stat 1".split("\\s++");
         double ew = Double.parseDouble(args[2]);
         ArrayList<String> lines = IO.readlines(args[1]);
         Infer.knowledgeGraph = knowledgeGraph = new KnowledgeGraph(args[0]);
@@ -43,7 +43,7 @@ public class SpearmanPerSupport {
             double mrr = Double.parseDouble(arr[4]);
             double econf = conf * (1 - ew) + mrr * ew;
 
-            if (conf < 0.1) {
+            if (conf < 0.2 || conf == 1) {
                 continue;
             }
 
@@ -66,6 +66,7 @@ public class SpearmanPerSupport {
                     ++support;
                 }
             }
+
             double quality = ((double) localNumTrue) / localPredict;
             stats.add(new Stat(support, quality, econf, conf));
         }
@@ -80,9 +81,9 @@ public class SpearmanPerSupport {
         System.out.println("max_ew\tconf\teconf\tdiff");
         int cur = -1;
         for (int l = 1; l <= 10; ++l) {
-            conf.clear();
-            econf.clear();
-            while (cur + 1 < stats.size() && stats.get(cur + 1).sup <= l) {
+//            conf.clear();
+//            econf.clear();
+            while (cur + 1 < stats.size() && stats.get(cur + 1).sup == l) {
                 ++cur;
                 conf.add(new Pair<>(stats.get(cur).prediction_quality, stats.get(cur).conf));
                 econf.add(new Pair<>(stats.get(cur).prediction_quality, stats.get(cur).econf));
