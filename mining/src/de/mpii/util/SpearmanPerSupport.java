@@ -43,6 +43,10 @@ public class SpearmanPerSupport {
             double mrr = Double.parseDouble(arr[4]);
             double econf = conf * (1 - ew) + mrr * ew;
 
+            if (conf < 0.1) {
+                continue;
+            }
+
             String rule = arr[0];
             Rule r = Infer.parseRule(knowledgeGraph, rule);
             System.out.println("Inferring rule: " + rule);
@@ -73,15 +77,18 @@ public class SpearmanPerSupport {
             }
         });
         ArrayList<Pair<Double, Double>> conf = new ArrayList<>(), econf = new ArrayList<>();
-        System.out.println("max_ew\tconf\teconf");
+        System.out.println("max_ew\tconf\teconf\tdiff");
         int cur = -1;
         for (int l = 1; l <= 10; ++l) {
+            conf.clear();
+            econf.clear();
             while (cur + 1 < stats.size() && stats.get(cur + 1).sup <= l) {
                 ++cur;
                 conf.add(new Pair<>(stats.get(cur).prediction_quality, stats.get(cur).conf));
                 econf.add(new Pair<>(stats.get(cur).prediction_quality, stats.get(cur).econf));
             }
-            System.out.printf("%d\t%.3f\t%.3f\n", l, Spearman.get(conf), Spearman.get(econf));
+            double confS = Spearman.getSpearman(conf), econfS = Spearman.getSpearman(econf), diff = econfS - confS;
+            System.out.printf("%d\t%.3f\t%.3f\t%.3f\n", l, confS, econfS, diff);
         }
     }
 }

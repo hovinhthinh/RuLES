@@ -10,7 +10,7 @@ import java.util.Comparator;
 public class Spearman {
     private static class Triple {
         double first, second;
-        int rank;
+        double rank;
 
         public Triple(Pair<Double, Double> p) {
             first = p.first;
@@ -18,8 +18,25 @@ public class Spearman {
         }
     }
 
+    public static double getPearson(ArrayList<Pair<Double, Double>> values) {
+        double mux = 0, muy = 0;
+        for (Pair<Double, Double> p : values) {
+            mux += p.first / values.size();
+            muy += p.second / values.size();
+        }
+        double sx = 0, sy = 0, cov = 0;
+        for (Pair<Double, Double> p : values) {
+            sx += Math.pow(p.first - mux, 2) / values.size();
+            sy += Math.pow(p.second - muy, 2) / values.size();
+            cov += (p.first - mux) * (p.second - muy) / values.size();
+        }
+        sx = Math.sqrt(sx);
+        sy = Math.sqrt(sy);
+        return cov / sx / sy;
+    }
+
     // first: gold standard, second: value
-    public static double get(ArrayList<Pair<Double, Double>> values) {
+    public static double getSpearman(ArrayList<Pair<Double, Double>> values) {
         ArrayList<Triple> t = new ArrayList<>();
         for (Pair<Double, Double> p : values) {
             t.add(new Triple(p));
@@ -31,7 +48,15 @@ public class Spearman {
             }
         });
         for (int i = 0; i < t.size(); ++i) {
-            t.get(i).rank = i + 1;
+            int j = i;
+            while (j < t.size() - 1 && Math.abs(t.get(j + 1).first - t.get(j).first) < 1e-6) {
+                ++j;
+            }
+            double rank = (i + j + 2.0f) / 2;
+            for (int k = i; k <= j; ++k) {
+                t.get(k).rank = rank;
+            }
+            i = j;
         }
         Collections.sort(t, new Comparator<Triple>() {
             @Override
@@ -39,10 +64,18 @@ public class Spearman {
                 return Double.compare(o1.second, o2.second);
             }
         });
-        double spearman = 0;
+        ArrayList<Pair<Double, Double>> ranks = new ArrayList<>();
         for (int i = 0; i < t.size(); ++i) {
-            spearman += Math.pow((double) i + 1 - t.get(i).rank, 2);
+            int j = i;
+            while (j < t.size() - 1 && Math.abs(t.get(j + 1).second - t.get(j).second) < 1e-6) {
+                ++j;
+            }
+            double rank = (i + j + 2.0f) / 2;
+            for (int k = i; k <= j; ++k) {
+                ranks.add(new Pair<>(t.get(k).rank, rank));
+            }
+            i = j;
         }
-        return 1 - 6 * spearman / t.size() / ((double) t.size() * t.size() - 1);
+        return getPearson(ranks);
     }
 }
