@@ -22,29 +22,29 @@ $ source /opt/intel/bin/compilervars.sh intel64 # (intel64 or ia32 depending on 
 ### 1. Workspace
 We should prepare a folder containing a single data file  with name `ideal.data.txt` of the knowledge graph, in which each triple is represented in one line using the RDF form:
 ```
-<entity>[tab]<predicate>[tab]<object>
+subject[tab]predicate[tab]object
 ```
-For representing unary predicate, the `<predicate>` of the triple should be `<type>`:
+For representing unary predicate, the `predicate` of the triple should be `<type>`:
 ```
-<entity>[tab]<type>[tab]<class>
+entity[tab]<type>[tab]class
 ```
-For representing hierarchical between classes, the `<predicate>` of the triple should be `<subClassOf>`:
+For representing hierarchical between classes, the `predicate` of the triple should be `<subClassOf>`:
 ```
-<classA>[tab]<subClassOf>[tab]<classB>
+classA[tab]<subClassOf>[tab]classB
 ```
 However, we currently ignore all information about the class hierarchy.
 Below is example of the input file:
 ```
-<He_Would_a_Hunting_Go>     <directedBy>     <George_Nichols_(actor)>
-<Too_Beautiful_for_You>     <type>           <wikicat_French-language_films>
-<wikicat_1941_musicals>     <subClassOf>     <wordnet_musical_107019172>
+He_Would_a_Hunting_Go     directedBy     George_Nichols_(actor)
+Too_Beautiful_for_You     <type>           wikicat_French-language_films
+wikicat_1941_musicals     <subClassOf>     wordnet_musical_107019172
 ```
 `Additional textual description`:
 To run SSP embedding model, we can attach additional textual description to file `entities_description.txt`, in which each line represents description of a entity:
 ```
-<entity>[tab]<description>
+entity[tab]description
 ```
-in which, `<entity>` shouldn't have any space in between.
+in which, `entity` shouldn't have any space in between.
 
 We prepared the workspace for IMDB dataset at `./data/imdb/`, FB15K(with entities description) at `./data/fb15k-new/`
  and WIKI44K(with entities description) at `./data/wiki44k/`
@@ -119,7 +119,7 @@ usage: utility-name
 ```
 It is recommended to extend the memory for java job with Xmx option depending on your machine. For example, following command will run the mining system with 100GB RAM.
 ```
-$ java -XX:-UseGCOverheadLimit -Xmx100G -jar mining/build.jar -w <workspace> -o <outputfile>
+$ java -XX:-UseGCOverheadLimit -Xmx100G -jar mining/build.jar -w <workspace> -em <embedding_model>
 ```
 Mined rules will be outputted to `<outputfile>` and `<outputfile>.sorted`.
 ### 5. Infer new facts
