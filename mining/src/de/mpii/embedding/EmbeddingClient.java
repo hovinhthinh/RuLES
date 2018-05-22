@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 // Embeddding Client should support concurrent queries.
 public abstract class EmbeddingClient {
+    public static final int SO_RANK_LIMIT = 10000;
     protected static final int CACHE_LIMIT_PER_PREDICATE = 10000;
     private static boolean NEGATIVE_TRAINING_ONLY = false;
     protected int nEntities, nRelations, eLength;
@@ -95,11 +96,14 @@ public abstract class EmbeddingClient {
             if (i == subject || i == object) {
                 continue;
             }
-            if (!trueFacts[predicate].containFact(i, object) && getScore(i, predicate, object) > score + 1e-6) {
+            if (rankH < SO_RANK_LIMIT && !trueFacts[predicate].containFact(i, object) && getScore(i, predicate, object) > score + 1e-6) {
                 ++rankH;
             }
-            if (!trueFacts[predicate].containFact(subject, i) && getScore(subject, predicate, i) > score + 1e-6) {
+            if (rankT < SO_RANK_LIMIT && !trueFacts[predicate].containFact(subject, i) && getScore(subject, predicate, i) > score + 1e-6) {
                 ++rankT;
+            }
+            if (rankH >= SO_RANK_LIMIT && rankT >= SO_RANK_LIMIT) {
+                break;
             }
         }
         double irank = 0.5 / rankH + 0.5 / rankT;
