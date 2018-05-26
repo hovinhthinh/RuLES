@@ -1,5 +1,8 @@
-# Enhancing Rule mining with Embedding
+# RuLES - Rule Learning with Embedding Support
 [![Build Status](https://travis-ci.org/hovinhthinh/kg-comp-embedding-rule.svg?branch=master)](https://travis-ci.org/hovinhthinh/kg-comp-embedding-rule)
+RuMIS is a system for mining nonmonotonic rules from a knowledge graph (KG) under the Open World Assumption (OWA)
+that accounts for the guidance from an pre-trained embedding model.
+
 ### Prerequisites
 - For mining system (using Java): jdk, ant
 - For embedding models:
