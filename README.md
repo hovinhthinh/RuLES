@@ -142,3 +142,6 @@ $ bash infer_dj.sh <workspace> <rulesfile> <numrules> <outputfacts>
 ```
 This will infer new rules and write to `<outputfacts>`, rules from top `<numrules>` lines will be processed, hence,
 remember to use `<rulesfile>`, which contains sorted rules.
+
+### References
+...
