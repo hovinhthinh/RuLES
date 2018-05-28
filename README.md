@@ -133,5 +133,5 @@ $ bash infer.sh <workspace> <rulesfile> <numrules> <outputfacts>
 This will infer new rules and write to `<outputfacts>`, rules from top `<numrules>` lines will be processed, hence,
 remember to use `<rulesfile>`, which contains sorted rules.
 ### References
-V. Thinh Ho, D. Stepanova, M. Gad-Elrab, E. Kharlamov and G. Weikum. Rule Learning from Knowledge
+[1] V. Thinh Ho, D. Stepanova, M. Gad-Elrab, E. Kharlamov and G. Weikum. Rule Learning from Knowledge
 Graphs Guided by Embedding Models. In Proc. *17th International Semantic Web Conference (ISWC 2018)*, to appear, 2018.
