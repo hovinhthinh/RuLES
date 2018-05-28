@@ -48,21 +48,24 @@ public class RuleStats {
 
     public void simplify(Rule r, KnowledgeGraph graph, EmbeddingClient embeddingClient, MinerConfig config) {
         bodySupport = headInstances.size();
+        HashSet<SOInstance> exceptionHeadInstances = null;
         for (int pid = 0; pid < confidence.length; ++pid) {
             if (sourceScr[pid] == -1 || bodySupport <= config.minSupport) {
                 scr[pid] = -1;
             } else {
                 if (r.atoms.get(r.atoms.size() - 1).negated) { // CHECK SUITABLE EXCEPTION.
-                    r.atoms.get(r.atoms.size() - 1).negated = false;
-                    HashSet<SOInstance> instances = Infer.matchRule(r, true);
+                    if (exceptionHeadInstances == null) {
+                        r.atoms.get(r.atoms.size() - 1).negated = false;
+                        exceptionHeadInstances = Infer.matchRule(r, true);
+                        r.atoms.get(r.atoms.size() - 1).negated = true;
+                    }
                     boolean flag = true;
-                    for (SOInstance so : instances) {
+                    for (SOInstance so : exceptionHeadInstances) {
                         if (graph.trueFacts.containFact(so.subject, pid, so.object)) {
                             flag = false;
                             break;
                         }
                     }
-                    r.atoms.get(r.atoms.size() - 1).negated = true;
                     if (!flag) {
                         scr[pid] = -1;
                         continue;
