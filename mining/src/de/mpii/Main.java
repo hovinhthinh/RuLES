@@ -30,11 +30,6 @@ public class Main {
         option.setRequired(false);
         options.addOption(option);
 
-        // disjunction
-        option = new Option("dj", "disjunction", false, "Mine rule with disjunction in the head");
-        option.setRequired(false);
-        options.addOption(option);
-
         // embeddingModel
         option = new Option("em", "embedding_model", true, "Embedding model ('transe'/'hole'/'ssp')");
         option.setRequired(true);
@@ -220,9 +215,6 @@ public class Main {
         if (cmd.hasOption("pca")) {
             config.usePCAConf = true;
         }
-        if (cmd.hasOption("dj")) {
-            config.disjunction = true;
-        }
         if (cmd.hasOption("xyz")) {
             config.xyz = true;
         }
@@ -244,19 +236,8 @@ public class Main {
             config.maxNumBinaryPositiveAtoms = 3;
             LOGGER.info("XYZ enabled: maxNumBinaryPositiveAtoms is set to 3");
         }
-        if (config.disjunction) {
-            if (config.maxNumAtoms > 4) {
-                throw new RuntimeException("Not support num atoms > 4 for disjunction");
-            }
-            if (config.usePCAConf) {
-                throw new RuntimeException("Not support PCA confidence for disjunction");
-            }
-            ConstantMiner miner = new ConstantMiner(cmd.getOptionValue("w"), config, new PrintWriter(new File(output)));
-            miner.mine();
-        } else {
-            Miner miner = new Miner(cmd.getOptionValue("w"), config, new PrintWriter(new File(output)));
-            miner.mine();
-        }
+        Miner miner = new Miner(cmd.getOptionValue("w"), config, new PrintWriter(new File(output)));
+        miner.mine();
 
         ArrayList<String[]> rules = new ArrayList<>();
         BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(new File(output))));

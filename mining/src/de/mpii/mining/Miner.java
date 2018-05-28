@@ -250,8 +250,7 @@ public class Miner implements Runnable {
 
         // If the monotonic part is closed, then set stats.
         if (r.closed) {
-            stats.simplify(r, knowledgeGraph, embeddingClient, config, config.disjunction && (r.atoms.size() < config
-                    .maxNumAtoms ? true : false));
+            stats.simplify(r, knowledgeGraph, embeddingClient, config);
             r.stats = stats;
         }
 
@@ -268,57 +267,32 @@ public class Miner implements Runnable {
                 break;
             }
             matchRule(r);
-            // Output disjunction.
-            if (r.stats != null && r.stats.disjunctionStats != null) {
-                for (RuleStats.DisjunctionStats dstats : r.stats.disjunctionStats) {
-                    System.out.printf("%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\tinc:\t%.3f\n", r
-                                    .getDisjunctionString
-                                            (dstats.pid1, dstats.pid2, knowledgeGraph.relationsString, knowledgeGraph
-                                                    .typesString, knowledgeGraph.entitiesString),
-                            dstats.hc, config.usePCAConf ? "pca" : "", dstats.conf, dstats.mrr, dstats.scr,
-                            dstats.inreaseScr);
-                    synchronized (output) {
-                        output.printf("%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\tinc:\t%.3f\n", r
-                                        .getDisjunctionString
-                                                (dstats.pid1, dstats.pid2, knowledgeGraph.relationsString, knowledgeGraph
-                                                        .typesString, knowledgeGraph.entitiesString),
-                                dstats.hc, config.usePCAConf ? "pca" : "", dstats.conf, dstats.mrr, dstats.scr,
-                                dstats.inreaseScr);
-                        output.flush();
-                    }
-                }
-            }
             if (RulePruner.isContentPruned(r, config)) {
                 continue;
             }
             if (r.stats != null) {
-                if (!config.disjunction) {
-                    for (int pid = 0; pid < knowledgeGraph.nRelations; ++pid) {
-                        if (r.stats.scr[pid] != -1) {
-                            r.atoms.get(0).pid = pid;
+                for (int pid = 0; pid < knowledgeGraph.nRelations; ++pid) {
+                    if (r.stats.scr[pid] != -1) {
+                        r.atoms.get(0).pid = pid;
 
-                            String result = String.format(
-                                    "%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\tsup:\t%d\tec:\t%.3f",
-                                    r.getString(knowledgeGraph.relationsString, knowledgeGraph.typesString, knowledgeGraph.entitiesString),
-                                    r.stats.headCoverage[pid],
-                                    config.usePCAConf ? "pca" : "",
-                                    r.stats.confidence[pid],
-                                    r.stats.mrr[pid],
-                                    r.stats.scr[pid],
-                                    r.stats.ruleSupport[pid],
-                                    r.stats.ec[pid]);
-                            System.out.println(result);
-                            synchronized (output) {
-                                output.println(result);
-                                output.flush();
-                            }
+                        String result = String.format(
+                                "%s\thc:\t%.3f\t%sconf:\t%.3f\tmrr:\t%.3f\tscr:\t%.3f\tsup:\t%d\tec:\t%.3f",
+                                r.getString(knowledgeGraph.relationsString, knowledgeGraph.typesString, knowledgeGraph.entitiesString),
+                                r.stats.headCoverage[pid],
+                                config.usePCAConf ? "pca" : "",
+                                r.stats.confidence[pid],
+                                r.stats.mrr[pid],
+                                r.stats.scr[pid],
+                                r.stats.ruleSupport[pid],
+                                r.stats.ec[pid]);
+                        System.out.println(result);
+                        synchronized (output) {
+                            output.println(result);
+                            output.flush();
                         }
                     }
-                    r.atoms.get(0).pid = -1;
                 }
-            }
-            if (config.disjunction && r.atoms.size() >= config.maxNumAtoms - 1) {
-                continue;
+                r.atoms.get(0).pid = -1;
             }
             if (r.atoms.size() >= config.maxNumAtoms) { // TODO: Migated from Pruner.
                 continue;

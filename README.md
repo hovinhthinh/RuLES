@@ -127,21 +127,11 @@ $ java -XX:-UseGCOverheadLimit -Xmx100G -jar mining/build.jar -w <workspace> -em
 ```
 Mined rules will be outputted to `<outputfile>` and `<outputfile>.sorted`.
 ### 5. Infer new facts
-#### 5.1. Infer facts without disjunction
 ```
 $ bash infer.sh <workspace> <rulesfile> <numrules> <outputfacts>
 # Ex: $ bash infer.sh ./data/imdb/ ./data/imdb/rules.txt.sorted 100 ./data/imdb/new_facts.txt
 ```
 This will infer new rules and write to `<outputfacts>`, rules from top `<numrules>` lines will be processed, hence,
 remember to use `<rulesfile>`, which contains sorted rules.
-#### 5.2. Infer facts with disjunction
-(experimental)
-```
-$ bash infer_dj.sh <workspace> <rulesfile> <numrules> <outputfacts>
-# Ex: $ bash infer_dj.sh ./data/imdb/ ./data/imdb/rules.txt.sorted 100 ./data/imdb/new_facts.txt
-```
-This will infer new rules and write to `<outputfacts>`, rules from top `<numrules>` lines will be processed, hence,
-remember to use `<rulesfile>`, which contains sorted rules.
-
 ### References
 ...
