@@ -48,7 +48,7 @@ To run SSP embedding model, we can attach additional textual description to file
 ```
 entity[tab]description
 ```
-in which, `entity` shouldn't have any space in between.
+in which, `entity` shouldn't have any space in between, `description` should be preprocessed (e.g. trim, to lower case, remove special characters).
 
 We prepared the workspace for IMDB dataset at `./data/imdb/`, FB15K(with entities description) at `./data/fb15k-new/`
  and WIKI44K(with entities description) at `./data/wiki44k/`
