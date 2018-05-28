@@ -14,13 +14,12 @@ import java.util.*;
 
 
 public class RuleStats {
-    // TODO: disable this bound.
     public static final int MRR_SAMPLE_SIZE = 100;
     public int ruleSupport[], bodySupport;
     public double[] headCoverage, confidence, mrr, scr, ec;
     public HashSet<SOInstance> headInstances;
-    // -1 is pruned, 0 is non-closed.
-    private double[] sourceScr;
+
+    private double[] sourceScr; // -1 is pruned, 0 is non-closed.
 
     public RuleStats(double[] sourceScr) {
         this.sourceScr = sourceScr;
@@ -107,7 +106,7 @@ public class RuleStats {
                     if (bodySupport == ruleSupport[pid] || confidence[pid] < config.minConf || ruleSupport[pid] <
                             config.minSupport || !goodExceptionCoverage(r, pid, config)) {
                         // Applying the rule doesn't extend the kg.
-                        // Rule is not confidence (double check to reduce complexity when calling embedding model)
+                        // Rule is not confident (double check to reduce complexity when calling embedding model)
                         // Rule does not have enough support.
                         scr[pid] = -1;
                     } else {

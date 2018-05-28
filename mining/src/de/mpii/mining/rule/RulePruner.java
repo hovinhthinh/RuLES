@@ -11,20 +11,9 @@ import java.util.logging.Logger;
  */
 public class RulePruner {
     public static final Logger LOGGER = Logger.getLogger(RulePruner.class.getName());
-    private static final int FORMAT_LOG_INTERVAL = 100000;
-    private static final int CONTENT_LOG_INTERVAL = 10000;
-    private static int FORMAT_COUNT = 0;
-    private static int CONTENT_COUNT = 0;
 
     public static boolean isFormatPruned(Rule r, KnowledgeGraph graph, MinerConfig config) {
         boolean result = isFormatPrunedInternal(r, graph, config);
-        if (result) {
-            ++FORMAT_COUNT;
-            if (FORMAT_COUNT % FORMAT_LOG_INTERVAL == 0) {
-                // TODO: Disable logging because of migrated filters.
-                // LOGGER.info("FormatPrunedCount: " + FORMAT_COUNT);
-            }
-        }
         return result;
     }
 
@@ -92,12 +81,6 @@ public class RulePruner {
 
     public static boolean isContentPruned(Rule r, MinerConfig config) {
         boolean result = isContentPrunedInternal(r, config);
-        if (result) {
-            ++CONTENT_COUNT;
-            if (CONTENT_COUNT % CONTENT_LOG_INTERVAL == 0) {
-                LOGGER.info("ContentPruned: " + CONTENT_COUNT);
-            }
-        }
         return result;
     }
 
