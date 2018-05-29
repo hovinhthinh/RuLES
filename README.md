@@ -1,5 +1,6 @@
 # RuLES - Rule Learning with Embedding Support
 [![Build Status](https://travis-ci.org/hovinhthinh/RuLES.svg?branch=master)](https://travis-ci.org/hovinhthinh/RuLES)
+[![HitCount](http://hits.dwyl.io/hovinhthinh/RuLES.svg)](http://hits.dwyl.io/hovinhthinh/RuLES)
 
 RuLES is a system for mining non-monotonic rules from a knowledge graph (KG) under the Open World Assumption (OWA)
 that accounts for the guidance from a pre-trained embedding model.
