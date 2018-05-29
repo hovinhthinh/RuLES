@@ -86,7 +86,7 @@ $ ./embedding/ssp_main <workspace> <embedding_dimension> <learning_rate> <margin
 ```
 The embedding model will run and the embedding data will be stored in file `ssp` in the workspace folder.
 
-Please read the original papers of the models for the meaning of the parameters being used.
+Please read the original papers of these models for the meaning of the parameters being used.
 ### 4. End-to-End Mining System Execution
 The following command runs the mining system in its most basic setting:
 ```
