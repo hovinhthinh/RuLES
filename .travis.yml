@@ -1,3 +1,2 @@
 language: java
-install: true
-script: echo "tested done"
+script: cd mining/ && ant build && cd ../ && echo "tested done"
