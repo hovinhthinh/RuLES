@@ -1,21 +1,19 @@
 # RuLES - Rule Learning with Embedding Support
-[![Build Status](https://travis-ci.org/hovinhthinh/kg-comp-embedding-rule.svg?branch=master)](https://travis-ci.org/hovinhthinh/kg-comp-embedding-rule)
+[![Build Status](https://travis-ci.org/hovinhthinh/RuLES.svg?branch=master)](https://travis-ci.org/hovinhthinh/RuLES)
 
 RuLES is a system for mining nonmonotonic rules from a knowledge graph (KG) under the Open World Assumption (OWA)
-that accounts for the guidance from an pre-trained embedding model.
+that accounts for the guidance from a pre-trained embedding model.
 
 ### Prerequisites
-- For mining system (using Java): jdk, ant
-- For embedding models:
-    - TransE, HolE models (using Python): python, numpy, scipy, scikit-learn
-    - SSP model (using C++): icc, boost, armadillo (recommend armadillo4)
-### 0. Build the project
+- For the mining system: `jdk` (we use v1.8.0), `ant` (we use v1.9.4)}
+- For the embedding models, we currently support TransE, HolE and SSP models and reuse their existing implementations. Following softwares should be installed for the corresponding models:
+    - TransE, HolE (implemented in Python): `python` (we use v2.7.9), `numpy` (we use v1.13.1), `scipy` (we use v0.19.1), `scikit-learn` (we use v0.19.0)}
+    - SSP (implemented in C++): `icc` (we use v18.0.1), `boost` (we use v1.55.0.2), `armadillo` (recommend v4)}
+### 0. Installation
 ```
 $ cd mining/ && ant build && cd ../
 ```
-This will generate a jar file for the mining system at `./mining/build.jar`
-
-`Additional`: If we want to run SSP embedding model:
+This command generates a jar file for the mining system at `./mining/build.jar`. For the embedding models, we reuse existing implementations from the authors of these models. Since the implementation of TransE and HolE are in Python, there is no need for compiling their source code. However, in case we want to use SSP model, which is implemented in C++, we need to run the following command to compile its source code:
 ```
 $ icc -std=c++11 -O3 -qopenmp -larmadillo -xHost embedding/ssp/ssp_main.cpp -o embedding/ssp_main
 ```
@@ -23,37 +21,39 @@ If there is any error, you might need to change the environment source of `icc` 
 ```
 $ source /opt/intel/bin/compilervars.sh intel64 # (intel64 or ia32 depending on system architecture)
 ```
-### 1. Workspace
-We should prepare a folder containing a single data file  with name `ideal.data.txt` of the knowledge graph, in which each triple is represented in one line using the RDF form:
+### 1. Data Preparation
+We need to prepare a `<workspace>`, which is a folder containing the file `ideal.data.txt`, consisting of all facts in the input KG. Each line of this file describes a triple of the input KG in the RDF form:
 ```
 subject[tab]predicate[tab]object
 ```
-For representing unary predicate, the `predicate` of the triple should be `<type>`:
+where `subject`, `predicate` and `object` should not have any space in between. For representing unary facts, the predicate `<type>` (with the brackets) should be used, and `object` should present the `subject`'s class as usual:
 ```
 entity[tab]<type>[tab]class
 ```
-For representing hierarchical between classes, the `predicate` of the triple should be `<subClassOf>`:
+For representing hierarchy between classes, the predicate `<subClassOf>` (with the brackets) should be used:
 ```
 classA[tab]<subClassOf>[tab]classB
 ```
 However, we currently ignore all information about the class hierarchy.
-Below is example of the input file:
+We provide an example of the input file below:
 ```
 He_Would_a_Hunting_Go     directedBy     George_Nichols_(actor)
 Too_Beautiful_for_You     <type>           wikicat_French-language_films
 wikicat_1941_musicals     <subClassOf>     wordnet_musical_107019172
 ```
-`Additional textual description`:
-To run SSP embedding model, we can attach additional textual description to file `entities_description.txt`, in which each line represents description of a entity:
+Additional external data sources are required depending on the chosen embedding model. If we use TransE or HolE models, no external data is needed. However, for the usage of SSP model, the file `entities_description.txt` should also be provided in the `<workspace>`. Each line of this file describes the description of an entity in the following form:
 ```
 entity[tab]description
 ```
-in which, `entity` shouldn't have any space in between, `description` should be preprocessed (e.g. trim, to lower case, remove special characters).
-
+Here, `description` is space-separated and should be preprocessed (e.g. trim, to lower case, remove special characters). Below is an example of the description file:
+```
+Oklahoma     state of the united states of america
+Falkland_Islands     archipelago in the south atlantic ocean
+London     capital of england and the united kingdom
+```
 We prepared the workspace for IMDB dataset at `./data/imdb/`, FB15K(with entities description) at `./data/fb15k-new/`
- and WIKI44K(with entities description) at `./data/wiki44k/`
-and
-### 2. Generate training and test set
+ and WIKI44K(with entities description) at `./data/wiki44k/`.
+### 2. Data Sampling
 ```
 $ bash gen_data.sh <workspace> <training_ratio>
 # Ex: $ bash gen_data.sh ./data/imdb/ 0.8
