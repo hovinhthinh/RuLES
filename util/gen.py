@@ -102,11 +102,17 @@ for i in range(5):
 
 with open(WORKSPACE + '/test.txt', 'w') as out:
     for v in range(TEST_NUM):
-        out.write("%d\t%d\t%d\n" % data_test_encoded[v]);
+        if (v < len(data_test_encoded)):
+            out.write("%d\t%d\t%d\n" % data_test_encoded[v]);
+        else:
+            out.write("%d\t%d\t%d\n" % data_encoded[v - len(data_test_encoded)]);
 
 with open(WORKSPACE + '/valid.txt', 'w') as out:
     for v in range(TEST_NUM, TEST_NUM + VALID_NUM):
-        out.write("%d\t%d\t%d\n" % data_test_encoded[v]);
+        if (v < len(data_test_encoded)):
+            out.write("%d\t%d\t%d\n" % data_test_encoded[v]);
+        else:
+            out.write("%d\t%d\t%d\n" % data_encoded[v - len(data_test_encoded)]);
 
 with open(WORKSPACE + '/train.txt', 'w') as out:
     for v in range(len(data_encoded)):
