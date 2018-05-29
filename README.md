@@ -1,14 +1,15 @@
 # RuLES - Rule Learning with Embedding Support
 [![Build Status](https://travis-ci.org/hovinhthinh/RuLES.svg?branch=master)](https://travis-ci.org/hovinhthinh/RuLES)
 
-RuLES is a system for mining non-monotonic rules from a knowledge graph (KG) under the Open World Assumption (OWA)
+RuLES [1] is a system for mining non-monotonic rules from a knowledge graph (KG) under the Open World Assumption (OWA)
 that accounts for the guidance from a pre-trained embedding model.
 
 Our system RuLES is implemented in Java 8 and reuses the available implementations of embedding models in different languages. Currently, the system runs on Linux and theoretically it can also run on Windows provided that all required software is installed properly.
 
 ### Prerequisites
 - For the mining system: `jdk` (we use v1.8.0), `ant` (we use v1.9.4)
-- For the embedding models, we currently support TransE, HolE and SSP models and reuse their existing implementations. Following software should be installed for the corresponding models:
+- For the embedding models, we currently support TransE [2], HolE [3] and SSP [4] models and reuse their existing
+implementations [5,6]. Following software should be installed for the corresponding models:
     - TransE, HolE (implemented in Python): `python` (we use v2.7.9), `numpy` (we use v1.13.1), `scipy` (we use v0.19.1), `scikit-learn` (we use v0.19.0)
     - SSP (implemented in C++): `icc` (we use v18.0.1), `boost` (we use v1.55.0.2), `armadillo` (recommend v4)
 ### 0. Installation
@@ -163,3 +164,16 @@ remember to use `<rulesfile>`, which contains sorted rules.
 ### References
 [1] V. Thinh Ho, D. Stepanova, M. Gad-Elrab, E. Kharlamov and G. Weikum. Rule Learning from Knowledge
 Graphs Guided by Embedding Models. In Proc. *17th International Semantic Web Conference (ISWC 2018)*, to appear, 2018.
+
+[2] A. Bordes, N. Usunier, A. Garc´ ıa-Duran, J. Weston, and O. Yakhnenko. Translating Embeddings for Modeling
+Multi-relational Data. In NIPS, 2013.
+
+[3] M. Nickel, L. Rosasco, and T. A. Poggio. Holographic embeddings of knowledge graphs. In AAAI, 2016.
+
+[4] H. Xiao, M. Huang, L. Meng, and X. Zhu. SSP: semantic space projection for knowledge graph embedding with text
+descriptions. In AAAI, 2017.
+
+[5] Reused imlementations of TransE & HolE:
+https://github.com/mnick/scikit-kge
+
+[6] Reused implementation of SSP: https://github.com/bookmanhan/Embedding
