@@ -1,12 +1,14 @@
 # RuLES - Rule Learning with Embedding Support
 [![Build Status](https://travis-ci.org/hovinhthinh/RuLES.svg?branch=master)](https://travis-ci.org/hovinhthinh/RuLES)
 
-RuLES is a system for mining nonmonotonic rules from a knowledge graph (KG) under the Open World Assumption (OWA)
+RuLES is a system for mining non-monotonic rules from a knowledge graph (KG) under the Open World Assumption (OWA)
 that accounts for the guidance from a pre-trained embedding model.
+
+Our system RuLES is implemented in Java 8 and reuses the available implementations of embedding models in different languages. Currently, the system runs on Linux and theoretically it can also run on Windows provided that all required software is installed properly.
 
 ### Prerequisites
 - For the mining system: `jdk` (we use v1.8.0), `ant` (we use v1.9.4)
-- For the embedding models, we currently support TransE, HolE and SSP models and reuse their existing implementations. Following softwares should be installed for the corresponding models:
+- For the embedding models, we currently support TransE, HolE and SSP models and reuse their existing implementations. Following software should be installed for the corresponding models:
     - TransE, HolE (implemented in Python): `python` (we use v2.7.9), `numpy` (we use v1.13.1), `scipy` (we use v0.19.1), `scikit-learn` (we use v0.19.0)
     - SSP (implemented in C++): `icc` (we use v18.0.1), `boost` (we use v1.55.0.2), `armadillo` (recommend v4)
 ### 0. Installation
@@ -130,7 +132,27 @@ It is recommended to extend the memory for the java job with `Xmx` option depend
 $ java -XX:-UseGCOverheadLimit -Xmx400G -jar mining/build.jar -w <workspace> -em <embedding_model>
 ```
 ### 5. System Extendability
-TO BE WRITTEN
+Our system is flexible for plugging in an arbitrary embedding model. Below, we briefly discuss how to do so in Java.
+
+__Step 1:__
+After sampling the data, our system generates several files in the `<workspace>`. However, we need to focus on the file `<workspace>/meta.txt`, which stores the signature of the given KG in the following format:
+- The first two numbers of the first line are the number of entities _e_ and relations _r_ of the KG, respectively. We index the entities with ids from _0_ to _(e-1)_ and correspondingly the relations with ids from _0_ to _(r-1)_.
+- Each line of the next _e_ lines stores the string value of one entity of the KG, from _0<sup>th</sup>_ entity to _(e-1)<sup>th</sup>_ entity.
+- Each line of the next _r_ lines stores the string value of one relation of the KG, from _0<sup>th</sup>_ relation to _(r-1)<sup>th</sup>_ relation.
+
+__Step 2:__
+Train the custom embedding model on the given KG. In this step, we can reuse the implementation of the embedding model in any language.
+
+__Step 3:__
+Create a class extending the abstract class `de.mpii.embedding.EmbeddingClient` that will work as a bridge between our mining system and the pre-trained embedding model. This class must implement the following methods:
+- A constructor that has a `String workspace` as one parameter (denoting the `<workspace>` folder) and calls the following constructor of the superclass: `super(workspace);`
+- A function that overrides the abstract method `public abstract double getScore(int subject, int predicate, int object)`; returning the likelihood score of a fact given its subject, predicate and object ids, computed based on the pre-trained embedding model. The mapping of these ids to their real values is described in the signature file as before. To interact with the embedding model within this function, a naive strategy is to write all optimized parameters of the trained model in step 2 to a file, and then reload them in the constructor of this class.
+
+__Step 4:__
+Edit the constructor of the class ```de.mpii.mining.Miner``` to add a short name (e.g. `transe`,`hole` or `ssp` as we currently have) and a class instantiation for the custom embedding model.
+
+__Step 5:__
+Simply use the chosen short name as the value for the parameter `-em,--embedding_model <arg>` when executing the mining system.
 ### 6. Infering new facts
 ```
 $ bash infer.sh <workspace> <rulesfile> <numrules> <outputfacts>
