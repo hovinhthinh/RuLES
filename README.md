@@ -16,7 +16,8 @@ implementations [5,6]. Following software should be installed for the correspond
 ```
 $ cd mining/ && ant build && cd ../
 ```
-This command generates a jar file for the mining system at `./mining/build.jar`. For the embedding models, we reuse existing implementations from the authors of these models. Since the implementation of TransE and HolE are in Python, there is no need for compiling their source code. However, in case we want to use SSP model, which is implemented in C++, we need to run the following command to compile its source code:
+This command generates a jar file for the mining system at `./mining/build.jar`. For the embedding models, we reuse
+existing implementations from the authors of these models. Since the implementations of TransE and HolE are in Python, there is no need for compiling their source code. However, in case we want to use SSP model, which is implemented in C++, we need to run the following command to compile its source code:
 ```
 $ icc -std=c++11 -O3 -qopenmp -larmadillo -xHost embedding/ssp/ssp_main.cpp -o embedding/ssp_main
 ```
@@ -142,7 +143,8 @@ After sampling the data, our system generates several files in the `<workspace>`
 - Each line of the next _r_ lines stores the string value of one relation of the KG, from _0<sup>th</sup>_ relation to _(r-1)<sup>th</sup>_ relation.
 
 __Step 2:__
-Train the custom embedding model on the given KG. In this step, we can reuse the implementation of the embedding model in any language.
+Train the custom embedding model on the given KG. In this step, we can reuse existing implementations of the embedding
+model in any language.
 
 __Step 3:__
 Create a class extending the abstract class `de.mpii.embedding.EmbeddingClient` that will work as a bridge between our mining system and the pre-trained embedding model. This class must implement the following methods:
