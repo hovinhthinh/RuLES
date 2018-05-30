@@ -30,7 +30,7 @@ We need to prepare a `<workspace>`, which is a folder containing the file `ideal
 ```
 subject[tab]predicate[tab]object
 ```
-where `subject`, `predicate` and `object` should not have any space in between. For representing unary facts, the predicate `<type>` (with the brackets) should be used, and `object` should present the `subject`'s class as usual:
+where `subject`, `predicate` and `object` are strings without spaces. For representing unary facts, the predicate `<type>` (with the brackets) should be used, and `object` should present the `subject`'s class as usual:
 ```
 entity[tab]<type>[tab]class
 ```
@@ -49,7 +49,7 @@ Additional external data sources are required depending on the chosen embedding 
 ```
 entity[tab]description
 ```
-Here, `description` is space-separated and should be preprocessed (e.g. trim, to lower case, remove special characters). Below is an example of the description file:
+Here, `description` is space-separated string and should be preprocessed (e.g. trim, to lower case, remove special characters). Below is an example of the description file:
 ```
 Oklahoma     state of the united states of america
 Falkland_Islands     archipelago in the south atlantic ocean
@@ -156,6 +156,7 @@ Edit the constructor of the class ```de.mpii.mining.Miner``` to add a short name
 
 __Step 5:__
 Simply use the chosen short name as the value for the parameter `-em,--embedding_model <arg>` when executing the mining system.
+<!--
 ### 6. Infering new facts
 ```
 $ bash infer.sh <workspace> <rulesfile> <numrules> <outputfacts>
@@ -163,6 +164,7 @@ $ bash infer.sh <workspace> <rulesfile> <numrules> <outputfacts>
 ```
 This command infers new rules and write to file`<outputfacts>`, rules from top `<numrules>` lines will be processed, hence,
 remember to use `<rulesfile>`, which contains sorted rules.
+-->
 ### References
 [1] V. Thinh Ho, D. Stepanova, M. Gad-Elrab, E. Kharlamov and G. Weikum. Rule Learning from Knowledge
 Graphs Guided by Embedding Models. In Proc. *17th International Semantic Web Conference (ISWC 2018)*, to appear, 2018.
