@@ -17,7 +17,7 @@ implementations [5,6]. Following software should be installed for the correspond
 $ cd mining/ && ant build && cd ../
 ```
 This command generates a jar file for the mining system at `./mining/build.jar`. For the embedding models, we reuse
-existing implementations from the authors of these models. Since the implementations of TransE and HolE are in Python, there is no need for compiling their source code. However, in case we want to use SSP model, which is implemented in C++, we need to run the following command to compile its source code:
+existing implementations of these models. Since the implementations of TransE and HolE are in Python, there is no need for compiling their source code. However, in case we want to use SSP model, which is implemented in C++, we need to run the following command to compile it:
 ```
 $ icc -std=c++11 -O3 -qopenmp -larmadillo -xHost embedding/ssp/ssp_main.cpp -o embedding/ssp_main
 ```
