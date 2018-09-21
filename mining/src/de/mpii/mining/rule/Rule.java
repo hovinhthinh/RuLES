@@ -10,9 +10,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class Rule {
-    // Support maximum 1 million entities, relations.
-    private static final long E_POW[] = new long[1000000];
-    private static final long R_POW[] = new long[1000000];
+    // Support maximum 10 million entities, relations.
+    private static final long E_POW[] = new long[10000000];
+    private static final long R_POW[] = new long[10000000];
     private static final long V_POW[] = new long[10];
     private static final long NEGATION_SIGN = 999983;
     private static final long UNARY_SIGN = 15485863;

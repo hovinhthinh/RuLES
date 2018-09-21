@@ -240,9 +240,9 @@ class ConstantRuleStats {
 
 
 class ConstantRule {
-    // Support maximum 1 million entities, relations.
-    private static final long E_POW[] = new long[1000000];
-    private static final long R_POW[] = new long[1000000];
+    // Support maximum 10 million entities, relations.
+    private static final long E_POW[] = new long[10000000];
+    private static final long R_POW[] = new long[10000000];
     private static final long V_POW[] = new long[10];
     private static final long INSTANCE_SIGN = 15485863;
     private static final long REVERSED_SIGN = 999983;

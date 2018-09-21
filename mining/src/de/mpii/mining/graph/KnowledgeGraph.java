@@ -157,7 +157,7 @@ public class KnowledgeGraph {
             }
             pid1Pid2CountReversed = new HashMap<>();
             for (long so : soPidMap.keySet()) {
-                int subject = (int) (so / 1000000), object = (int) (so % 1000000);
+                int subject = (int) (so / 10000000), object = (int) (so % 10000000);
                 List<Integer> pids = soPidMap.get(so);
                 List<Integer> pidsR = soPidMap.get(encodeSO(object, subject));
                 if (pidsR == null) {
@@ -215,7 +215,7 @@ public class KnowledgeGraph {
     }
 
     private long encodeSO(int subject, int object) {
-        return ((long) subject) * 1000000 + object; // not change the base here.
+        return ((long) subject) * 10000000 + object; // not change the base here.
     }
 
     public List<Integer> getPidList(int subject, int object) {
