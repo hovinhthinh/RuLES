@@ -38,14 +38,16 @@ public class Miner implements Runnable {
     public PrintWriter output;
 
     public Miner(String workspace, MinerConfig config, PrintWriter output) {
-        if (config.embeddingModel.equalsIgnoreCase("transe")) {
-            embeddingClient = new TransEClient(workspace, "L1");
-        } else if (config.embeddingModel.equalsIgnoreCase("hole")) {
-            embeddingClient = new HolEClient(workspace);
-        } else if (config.embeddingModel.equalsIgnoreCase("ssp")) {
-            embeddingClient = new SSPClient(workspace);
-        } else {
-            throw new RuntimeException("Invalid embedding model");
+        if (config.embeddingWeight != 0) {
+            if (config.embeddingModel.equalsIgnoreCase("transe")) {
+                embeddingClient = new TransEClient(workspace, "L1");
+            } else if (config.embeddingModel.equalsIgnoreCase("hole")) {
+                embeddingClient = new HolEClient(workspace);
+            } else if (config.embeddingModel.equalsIgnoreCase("ssp")) {
+                embeddingClient = new SSPClient(workspace);
+            } else {
+                throw new RuntimeException("Invalid embedding model");
+            }
         }
         knowledgeGraph = new KnowledgeGraph(workspace);
         Infer.knowledgeGraph = knowledgeGraph;
