@@ -1,16 +1,68 @@
 package de.mpii.mining.rule;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Created by hovinhthinh on 11/13/17.
  */
+
+class CollaborationPriorityQueue<T> {
+
+    private PriorityQueue<T> queue;
+    private int numberOfCollaborators;
+
+    private final Object lock = new Object();
+    private int currentWaitCount = 0;
+    public boolean isEnded = false;
+
+    public CollaborationPriorityQueue(int nCollaborators, Comparator<T> comparator) {
+        if (nCollaborators < 1) {
+            throw new RuntimeException("nCollaborators must be positive.");
+        }
+        numberOfCollaborators = nCollaborators;
+        queue = new PriorityQueue<>(comparator);
+    }
+
+    public boolean push(T element) {
+        synchronized (lock) {
+            boolean result = queue.add(element);
+            lock.notify();
+            return result;
+        }
+    }
+
+    public T pop() {
+        synchronized (lock) {
+            try {
+                while (true) {
+                    if (!queue.isEmpty()) {
+                        return queue.poll();
+                    }
+                    ++currentWaitCount;
+                    if (currentWaitCount == numberOfCollaborators) {
+                        isEnded = true;
+                        lock.notify();
+                        return null;
+                    }
+                    lock.wait();
+                    --currentWaitCount;
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(CollaborationPriorityQueue.class.getName()).log(Level.SEVERE, null, ex);
+                return null;
+            }
+        }
+    }
+
+    public int size() {
+        return queue.size();
+    }
+}
+
 class RuleComparator implements Comparator<Rule> {
     @Override
     public int compare(Rule o1, Rule o2) {
@@ -27,16 +79,16 @@ public class RuleQueue {
     private Set<Long> enqueuedRuleCode;
 
     // Synchronized queue.
-    private PriorityBlockingQueue<Rule> rulesQueue;
+    private CollaborationPriorityQueue<Rule> rulesQueue;
 
     private int enqueueLimit;
     private int enqueueCount;
     private int operationCount;
     private int currentNumAtom;
 
-    public RuleQueue(int enqueueLimit) {
+    public RuleQueue(int enqueueLimit, int nWorkers) {
         enqueuedRuleCode = Collections.synchronizedSet(new HashSet<>());
-        rulesQueue = new PriorityBlockingQueue<>(11, new RuleComparator());
+        rulesQueue = new CollaborationPriorityQueue<>(nWorkers, new RuleComparator());
 
         this.enqueueLimit = enqueueLimit;
         enqueueCount = 0;
@@ -61,7 +113,7 @@ public class RuleQueue {
             return false;
         }
         enqueuedRuleCode.add(code);
-        rulesQueue.add(r);
+        rulesQueue.push(r);
         ++enqueueCount;
         ++operationCount;
         if (operationCount % OPERATION_LOG_INTERVAL == 0) {
@@ -71,16 +123,11 @@ public class RuleQueue {
     }
 
     public Rule dequeue() {
-        try {
-            ++operationCount;
-            if (operationCount % OPERATION_LOG_INTERVAL == 0) {
-                LOGGER.info("RuleBodyQueueSize: " + rulesQueue.size());
-            }
-            // Wait for 5 min before returning.
-            Rule front = rulesQueue.poll(300, TimeUnit.SECONDS);
-            return front;
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        ++operationCount;
+        if (operationCount % OPERATION_LOG_INTERVAL == 0) {
+            LOGGER.info("RuleBodyQueueSize: " + rulesQueue.size());
         }
+        Rule front = rulesQueue.pop();
+        return front;
     }
 }

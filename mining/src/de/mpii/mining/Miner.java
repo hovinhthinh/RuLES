@@ -51,7 +51,7 @@ public class Miner implements Runnable {
         }
         knowledgeGraph = new KnowledgeGraph(workspace);
         Infer.knowledgeGraph = knowledgeGraph;
-        ruleQueue = new RuleQueue(config.enqueueLimit);
+        ruleQueue = new RuleQueue(config.enqueueLimit, config.numWorkers);
         this.config = config;
         this.output = output;
 
