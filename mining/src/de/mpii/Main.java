@@ -1,6 +1,5 @@
 package de.mpii;
 
-import de.mpii.mining.ConstantMiner;
 import de.mpii.mining.Miner;
 import de.mpii.mining.MinerConfig;
 import org.apache.commons.cli.*;
