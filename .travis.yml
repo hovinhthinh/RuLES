@@ -1,2 +1,2 @@
 language: java
-script: cd mining/ && ant build && cd ../ && echo "tested done"
+script: mvn compile && echo "tested done"
