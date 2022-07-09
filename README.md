@@ -7,16 +7,16 @@ that accounts for the guidance from a pre-trained embedding model.
 Our system RuLES is implemented in Java 8 and reuses the available implementations of embedding models in different languages. Currently, the system runs on Linux and theoretically it can also run on Windows provided that all required software is installed properly.
 
 ### Prerequisites
-- For the mining system: `jdk` (we use v1.8.0), `ant` (we use v1.9.4)
+- For the mining system: `jdk` (we use v1.8.0), `maven` (we use v3.8.5)
 - For the embedding models, we currently support TransE [2], HolE [3] and SSP [4] models and reuse their existing
 implementations [5,6]. Following software should be installed for the corresponding models:
     - TransE, HolE (implemented in Python): `python` (we use v2.7.9), `numpy` (we use v1.13.1), `scipy` (we use v0.19.1), `scikit-learn` (we use v0.19.0)
     - SSP (implemented in C++): `icc` (we use v18.0.1), `boost` (we use v1.55.0.2), `armadillo` (recommend v4)
 ### 0. Installation
 ```
-$ cd mining/ && ant build && cd ../
+$ mvn compile
 ```
-This command generates a jar file for the mining system at `./mining/build.jar`. For the embedding models, we reuse
+This command compiles the java code for the mining system. For the embedding models, we reuse
 existing implementations of these models. Since the implementations of TransE and HolE are in Python, there is no need for compiling their source code. However, in case we want to use SSP model, which is implemented in C++, we need to run the following command to compile it:
 ```
 $ icc -std=c++11 -O3 -qopenmp -larmadillo -xHost embedding/ssp/ssp_main.cpp -o embedding/ssp_main
@@ -94,14 +94,14 @@ Please read the original papers [2,3,4] of these models for the meaning of the p
 ### 4. End-to-End Mining System Execution
 The following command runs the mining system in its most basic setting:
 ```
-$ java -jar mining/build.jar -w <workspace> -em <embedding_model>
-# Ex: $ java -jar mining/build.jar -w ./data/imdb/ -em transe
+$ bash run.sh -w <workspace> -em <embedding_model>
+# Ex: $ bash run.sh -w ./data/imdb/ -em transe
 ```
 where `<workspace>` is the prepared data folder, and `<embedding_model>` is equal to either `transe`, `hole` or `ssp`, corresponding to the embedding model being used. The system outputs mined rules to the file `<workspace>/rules.txt` on the fly. After the mining process is done, all extracted rules will be ranked in the decreasing order of the hybrid quality and then be written to the file `<workspace>/rules.txt.sorted`.
 
 To see full list of supported parameters, run the jar file without any parameter:
 ```
-$ java -jar mining/build.jar
+$ bash run.sh
 ```
 The printed message:
 ```
@@ -131,7 +131,7 @@ usage: utility-name
 ```
 It is recommended to extend the memory for the java job with `Xmx` option depending on the configuration of your machine. For example, following command runs the mining system with 400GB RAM:
 ```
-$ java -XX:-UseGCOverheadLimit -Xmx400G -jar mining/build.jar -w <workspace> -em <embedding_model>
+$ export MAVEN_OPTS="-Xmx400G" && bash run.sh -w <workspace> -em <embedding_model>
 ```
 ### 5. System Extendability
 Our system is flexible for plugging in an arbitrary embedding model. Below, we briefly discuss how to do so in Java.
