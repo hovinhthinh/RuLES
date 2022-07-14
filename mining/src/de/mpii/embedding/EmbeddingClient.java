@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -21,6 +22,8 @@ public abstract class EmbeddingClient {
     protected int nEntities, nRelations, eLength;
     protected FactEncodedSetPerPredicate[] trueFacts;
     protected ConcurrentHashMap<Long, Double>[] cachedRankQueries;
+    protected HashMap<String, Integer> entitiesStringMap, relationsStringMap;
+    protected ArrayList<String> entitiesString, relationsString;
 
     public EmbeddingClient(String workspace) {
         try {
@@ -31,12 +34,19 @@ public abstract class EmbeddingClient {
             nEntities = Integer.parseInt(arr[0]);
             nRelations = Integer.parseInt(arr[1]);
 
-            HashMap<String, Integer> entitiesStringMap = new HashMap<>(), relationsStringMap = new HashMap<>();
+            entitiesStringMap = new HashMap<>();
+            relationsStringMap = new HashMap<>();
+            entitiesString = new ArrayList<>();
+            relationsString = new ArrayList<>();
             for (int i = 0; i < nEntities; ++i) {
-                entitiesStringMap.put(metaIn.readLine(), i);
+                String line = metaIn.readLine();
+                entitiesStringMap.put(line, i);
+                entitiesString.add(line);
             }
             for (int i = 0; i < nRelations; ++i) {
-                relationsStringMap.put(metaIn.readLine(), i);
+                String line = metaIn.readLine();
+                relationsStringMap.put(line, i);
+                relationsString.add(line);
             }
             metaIn.close();
 
