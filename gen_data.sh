@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
 echo 'Separating ideal data into training and test data'
-javac util/TrainingGen.java
-java -classpath util/ TrainingGen $1 $2 ${3:-true}
-rm util/TrainingGen.class
+mvn exec:java -Dexec.mainClass=de.mpii.util.TrainingGen -Dexec.args="$1 $2 true"
 echo 'Normalizing data'
-python util/gen.py $1
+python script/gen.py $1

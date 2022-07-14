@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 
-java -cp mining/build.jar de.mpii.util.Infer "$@"
+ARGS=`echo "$@"`
+mvn exec:java -Dexec.mainClass=de.mpii.util.Infer -Dexec.args="$ARGS"
