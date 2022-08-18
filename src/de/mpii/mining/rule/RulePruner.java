@@ -93,7 +93,7 @@ public class RulePruner {
         for (int i = 0; i < r.nRelations; ++i) {
             // TODO: DEPRECATED: minHeadCoverage minExceptionConfidence filter migrated to RuleStats.
             if (r.stats.headCoverage[i] >= config.minHeadCoverage &&
-                    (r.stats.scr[i] > r.sourceScr[i] + 1e-3) && r.sourceScr[i] != -1
+                    (r.sourceScr[i] == 0 || r.stats.scr[i] > r.sourceScr[i] + 1e-3) && r.sourceScr[i] != -1
 //                    && goodExceptionCoverage(r, i, config)
                     ) {
                 hasGoodHead = true;
